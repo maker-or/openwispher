@@ -2,54 +2,104 @@
 //  SettingsView.swift
 //  OpenWispher
 //
-//  Settings and preferences view with permission management.
+//  Settings and preferences view with permission management and provider configuration.
 //
 
-import AVFoundation
 import SwiftUI
+import AVFoundation
+import AppKit
+
+// MARK: - Main Settings View
 
 /// Settings window view with permission management and app preferences
 internal struct SettingsView: View {
     internal var permissionManager: PermissionManager
     @Bindable internal var appState: AppState
     internal var historyManager: HistoryManager?
-
-    @State private var autoLaunchEnabled = false
+    
     @State private var showingResetAlert = false
-    @State private var showingAbout = false
-
+    @SceneStorage("settings.selectedSection") private var selectedSectionRaw: String = SettingsSection.permissions.rawValue
+    
+    private enum SettingsSection: String, CaseIterable {
+        case permissions = "Permissions"
+        case providers = "Providers"
+        case general = "General"
+        case history = "History"
+        case about = "About"
+    }
+    
+    private var selectedSectionBinding: Binding<SettingsSection> {
+        Binding(
+            get: { SettingsSection(rawValue: selectedSectionRaw) ?? .permissions },
+            set: { selectedSectionRaw = $0.rawValue }
+        )
+    }
+    
     var body: some View {
-        TabView {
-            Tab("Permissions", systemImage: "checkmark.shield.fill") {
-                PermissionsSettingsView(permissionManager: permissionManager)
+        NavigationSplitView {
+            List(selection: selectedSectionBinding) {
+                Section("Settings") {
+                    Label("Permissions", systemImage: "checkmark.shield.fill")
+                        .tag(SettingsSection.permissions)
+                    Label("Providers", systemImage: "network")
+                        .tag(SettingsSection.providers)
+                    Label("General", systemImage: "gear")
+                        .tag(SettingsSection.general)
+                    Label("History", systemImage: "clock.arrow.circlepath")
+                        .tag(SettingsSection.history)
+                    Label("About", systemImage: "info.circle.fill")
+                        .tag(SettingsSection.about)
+                }
             }
-
-            Tab("General", systemImage: "gear") {
+            .listStyle(.sidebar)
+        } detail: {
+            switch selectedSectionBinding.wrappedValue {
+            case .permissions:
+                PermissionsSettingsView(permissionManager: permissionManager)
+            case .providers:
+                ProvidersSettingsView()
+            case .general:
                 GeneralSettingsView(
-                    autoLaunchEnabled: $autoLaunchEnabled,
                     showingResetAlert: $showingResetAlert,
                     appState: appState
                 )
-            }
-
-            Tab("History", systemImage: "clock.arrow.circlepath") {
+            case .history:
                 HistorySettingsView(historyManager: historyManager)
-            }
-
-            Tab("About", systemImage: "info.circle.fill") {
+            case .about:
                 AboutSettingsView()
             }
         }
-        .frame(width: UIConstants.Window.settingsWidth, height: UIConstants.Window.settingsHeight)
-        .onAppear {
-            loadPreferences()
-        }
+        .frame(minWidth: UIConstants.Window.settingsWidth, minHeight: UIConstants.Window.settingsHeight)
         .background(WindowConfigurator())
         .seamlessToolbarWindowBackground()
     }
+}
 
-    private func loadPreferences() {
-        autoLaunchEnabled = UserDefaults.standard.bool(forKey: "autoLaunchEnabled")
+// MARK: - Glass Card Component
+
+private struct GlassCard<Content: View>: View {
+    let content: Content
+    
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+    
+    var body: some View {
+        if #available(iOS 26.0, macOS 26.0, *) {
+            GlassEffectContainer(spacing: 0) {
+                content
+                    .padding(UIConstants.Spacing.large)
+                    .glassEffect(.regular.tint(.primary.opacity(0.05)), in: .rect(cornerRadius: 16))
+            }
+        } else {
+            content
+                .padding(UIConstants.Spacing.large)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(.primary.opacity(0.1), lineWidth: 1)
+                )
+        }
     }
 }
 
@@ -58,7 +108,7 @@ internal struct SettingsView: View {
 private struct PermissionsSettingsView: View {
     var permissionManager: PermissionManager
     @State private var isCheckingPermissions = false
-
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: UIConstants.Spacing.section) {
@@ -67,129 +117,98 @@ private struct PermissionsSettingsView: View {
                     Text("Permissions")
                         .font(.title2)
                         .bold()
-
+                    
                     Text("OpenWispher requires these permissions to function properly.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, UIConstants.Spacing.extraLarge)
-
-                Divider()
-
-                // Permission Cards in Glass Container
-                GlassEffectContainer(spacing: UIConstants.Spacing.standard) {
-                    // Microphone Permission
-                    PermissionCardView(
+                
+                // Permission Cards
+                VStack(spacing: UIConstants.Spacing.standard) {
+                    PermissionCard(
                         icon: "mic.fill",
                         iconColor: .blue,
-                        title: "Microphone Access",
-                        description: "Required to record your voice for transcription.",
+                        title: "Microphone",
+                        description: "Used to capture your voice for transcription.",
                         isGranted: permissionManager.hasMicrophonePermission,
                         status: microphoneStatusText,
-                        actionTitle: "Request Permission",
+                        actionTitle: "Request Access",
                         action: {
                             Task {
                                 await permissionManager.requestMicrophonePermission()
                             }
                         }
                     )
-
-                    // Accessibility Permission
-                    PermissionCardView(
+                    
+                    PermissionCard(
                         icon: "hand.raised.fill",
                         iconColor: .purple,
-                        title: "Accessibility Access",
-                        description:
-                            "Required to auto-paste transcribed text and monitor global hotkeys.",
+                        title: "Accessibility",
+                        description: "Allows auto-paste and global hotkey support.",
                         isGranted: permissionManager.hasAccessibilityPermission,
                         status: accessibilityStatusText,
-                        actionTitle: "Request Permission",
+                        actionTitle: "Open Settings",
                         action: {
                             permissionManager.requestAccessibilityPermission()
                         }
                     )
                 }
-
-                Divider()
-
-                // Manual Refresh
+                
+                // Overall Status
+                OverallStatusCard(hasAllPermissions: permissionManager.hasAllPermissions)
+                    .animation(.easeInOut(duration: UIConstants.Animation.standard), value: permissionManager.hasAllPermissions)
+                
+                // Refresh Button
                 HStack {
                     Text("Not seeing the correct status?")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-
+                    
                     Spacer()
-
+                    
                     Button(action: refreshPermissions) {
                         HStack(spacing: 4) {
-                            Image(systemName: "arrow.clockwise")
+                            Image(systemName: isCheckingPermissions ? "arrow.clockwise" : "arrow.clockwise")
+                                .rotationEffect(.degrees(isCheckingPermissions ? 360 : 0))
+                                .animation(isCheckingPermissions ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isCheckingPermissions)
                             Text("Refresh")
                         }
                         .font(.caption)
                     }
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                     .controlSize(.small)
                     .disabled(isCheckingPermissions)
-                }
-
-                // Overall Status
-                if permissionManager.hasAllPermissions {
-                    HStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                        Text("All permissions granted")
-                            .font(.subheadline)
-                            .foregroundStyle(.green)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassEffect(.regular.tint(.green))
-                } else {
-                    HStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.orange)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Some permissions missing")
-                                .font(.subheadline)
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.orange)
-                            Text("Grant all permissions for full functionality")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassEffect(.regular.tint(.orange))
+                    .keyboardShortcut("r", modifiers: [.command])
+                    .help("Re-check system permissions")
                 }
             }
             .padding(.horizontal, UIConstants.Spacing.section)
             .padding(.bottom, UIConstants.Spacing.extraLarge)
         }
     }
-
+    
     private var microphoneStatusText: String {
-        permissionManager.hasMicrophonePermission ? "Granted" : "Not Granted"
+        permissionManager.hasMicrophonePermission ? "Granted" : "Required"
     }
-
+    
     private var accessibilityStatusText: String {
-        permissionManager.hasAccessibilityPermission ? "Granted" : "Not Granted"
+        permissionManager.hasAccessibilityPermission ? "Granted" : "Required"
     }
-
+    
     private func refreshPermissions() {
         isCheckingPermissions = true
         permissionManager.checkPermissions()
-
-        // Small delay for UI feedback
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + UIConstants.Delay.permissionCheck) {
             isCheckingPermissions = false
         }
     }
 }
 
-// MARK: - Permission Card Component
+// MARK: - Permission Card
 
-private struct PermissionCardView: View {
+private struct PermissionCard: View {
     let icon: String
     let iconColor: Color
     let title: String
@@ -198,102 +217,405 @@ private struct PermissionCardView: View {
     let status: String
     let actionTitle: String
     let action: () -> Void
-
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: UIConstants.Spacing.standard) {
-            HStack(spacing: UIConstants.Spacing.standard) {
-                // Icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(iconColor.opacity(0.15))
-                        .frame(width: 50, height: 50)
-
-                    Image(systemName: icon)
-                        .font(.title2)
-                        .foregroundStyle(iconColor)
-                }
-
-                // Title and Description
-                VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
-                    Text(title)
-                        .font(.headline)
-
-                    Text(description)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-
-                Spacer()
-
-                // Status Badge
-                StatusBadge(isGranted: isGranted, text: status)
-            }
-
-            // Action Button - Only shown when not granted, visually separate
-            if !isGranted {
-                Divider()
-                    .padding(.vertical, UIConstants.Spacing.medium)
-                
-                Button(action: action) {
-                    HStack(spacing: UIConstants.Spacing.medium) {
-                        Image(systemName: "arrow.forward.circle.fill")
-                            .font(.title3)
-                        Text(actionTitle)
-                            .font(.subheadline)
-                            .font(.subheadline.weight(.semibold))
-                        Spacer()
+        GlassCard {
+            VStack(alignment: .leading, spacing: UIConstants.Spacing.standard) {
+                HStack(spacing: UIConstants.Spacing.standard) {
+                    // Icon
+                    ZStack {
+                        if #available(iOS 26.0, macOS 26.0, *) {
+                            Image(systemName: icon)
+                                .font(.title2)
+                                .foregroundStyle(iconColor)
+                                .frame(width: 50, height: 50)
+                                .glassEffect(.regular.tint(iconColor.opacity(0.15)), in: .rect(cornerRadius: 12))
+                        } else {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(iconColor.opacity(0.15))
+                                .frame(width: 50, height: 50)
+                                .overlay(
+                                    Image(systemName: icon)
+                                        .font(.title2)
+                                        .foregroundStyle(iconColor)
+                                )
+                        }
                     }
-                    .foregroundStyle(.tint)
+                    
+                    // Title and Description
+                    VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
+                        Text(title)
+                            .font(.headline)
+                        
+                        Text(description)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                    
+                    Spacer()
+                    
+                    // Status Badge
+                    StatusBadge(isGranted: isGranted, text: status)
                 }
-                .buttonStyle(.plain)
+                
+                // Action Button
+                if !isGranted {
+                    Button(action: action) {
+                        HStack {
+                            Image(systemName: "arrow.forward.circle.fill")
+                            Text(actionTitle)
+                            Spacer()
+                        }
+                        .font(.subheadline.weight(.medium))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.regular)
+                    .padding(.top, UIConstants.Spacing.medium)
+                }
             }
         }
-        .padding(UIConstants.Spacing.large)
-        .glassEffect(.regular)
     }
 }
 
-// MARK: - Status Badge Component
+// MARK: - Status Badge
 
 private struct StatusBadge: View {
     let isGranted: Bool
     let text: String
-
+    
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: isGranted ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.caption)
+        if #available(iOS 26.0, macOS 26.0, *) {
             Text(text)
-                .font(.caption)
-                .font(.subheadline.weight(.medium))
+                .font(.caption.weight(.medium))
+                .foregroundStyle(isGranted ? .green : .orange)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .glassEffect(
+                    .regular
+                    .tint(isGranted ? Color.green.opacity(0.15) : Color.orange.opacity(0.15)),
+                    in: .capsule
+                )
+        } else {
+            Text(text)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(isGranted ? .green : .orange)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule()
+                        .fill((isGranted ? Color.green : Color.orange).opacity(0.15))
+                )
         }
-        .foregroundStyle(isGranted ? .green : .orange)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(
-            Capsule()
-                .fill((isGranted ? Color.green : Color.orange).opacity(0.15))
-        )
+    }
+}
+
+// MARK: - Overall Status Card
+
+private struct OverallStatusCard: View {
+    let hasAllPermissions: Bool
+    
+    var body: some View {
+        GlassCard {
+            HStack(spacing: UIConstants.Spacing.standard) {
+                Image(systemName: hasAllPermissions ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                    .font(.title3)
+                    .foregroundStyle(hasAllPermissions ? .green : .orange)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(hasAllPermissions ? "All permissions granted" : "Some permissions missing")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(hasAllPermissions ? .green : .orange)
+                    
+                    if !hasAllPermissions {
+                        Text("Grant all permissions for full functionality")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
+                Spacer()
+            }
+        }
+    }
+}
+
+// MARK: - Providers Settings Tab
+
+private struct ProvidersSettingsView: View {
+    @AppStorage("selectedTranscriptionProvider") private var selectedProviderRaw = TranscriptionProviderType.groq.rawValue
+    @AppStorage("selectedTTSProvider") private var selectedTTSProviderRaw = TTSProviderType.groq.rawValue
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: UIConstants.Spacing.section) {
+                // Header
+                VStack(alignment: .leading, spacing: UIConstants.Spacing.medium) {
+                    Text("Providers")
+                        .font(.title2)
+                        .bold()
+                    
+                    Text("Configure AI providers for speech-to-text and text-to-speech.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, UIConstants.Spacing.extraLarge)
+                
+                // Transcription Provider
+                ProviderConfigurationCard(
+                    title: "Speech-to-Text",
+                    icon: "waveform",
+                    iconColor: .blue,
+                    providers: TranscriptionProviderType.allCases.map { ProviderItem(id: $0.rawValue, name: $0.displayName, description: $0.description) },
+                    selectedProvider: $selectedProviderRaw,
+                    getAPIKey: { provider in
+                        guard let type = TranscriptionProviderType(rawValue: provider) else { return nil }
+                        return SecureStorage.retrieveAPIKey(for: type)
+                    },
+                    setAPIKey: { provider, key in
+                        guard let type = TranscriptionProviderType(rawValue: provider) else { return }
+                        if key.isEmpty {
+                            try? SecureStorage.deleteAPIKey(for: type)
+                        } else {
+                            try? SecureStorage.storeAPIKey(key, for: type)
+                        }
+                    },
+                    deleteAPIKey: { provider in
+                        guard let type = TranscriptionProviderType(rawValue: provider) else { return }
+                        try? SecureStorage.deleteAPIKey(for: type)
+                    }
+                )
+                
+                // TTS Provider
+                ProviderConfigurationCard(
+                    title: "Text-to-Speech",
+                    icon: "speaker.wave.2",
+                    iconColor: .purple,
+                    providers: TTSProviderType.allCases.map { ProviderItem(id: $0.rawValue, name: $0.displayName, description: "") },
+                    selectedProvider: $selectedTTSProviderRaw,
+                    getAPIKey: { provider in
+                        guard let type = TTSProviderType(rawValue: provider) else { return nil }
+                        return SecureStorage.retrieveTTSAPIKey(for: type)
+                    },
+                    setAPIKey: { provider, key in
+                        guard let type = TTSProviderType(rawValue: provider) else { return }
+                        if key.isEmpty {
+                            try? SecureStorage.deleteTTSAPIKey(for: type)
+                        } else {
+                            try? SecureStorage.storeTTSAPIKey(key, for: type)
+                        }
+                    },
+                    deleteAPIKey: { provider in
+                        guard let type = TTSProviderType(rawValue: provider) else { return }
+                        try? SecureStorage.deleteTTSAPIKey(for: type)
+                    }
+                )
+            }
+            .padding(.horizontal, UIConstants.Spacing.section)
+            .padding(.bottom, UIConstants.Spacing.extraLarge)
+        }
+    }
+}
+
+// MARK: - Provider Item Model
+
+private struct ProviderItem: Identifiable {
+    let id: String
+    let name: String
+    let description: String
+}
+
+// MARK: - Provider Configuration Card
+
+private struct ProviderConfigurationCard: View {
+    let title: String
+    let icon: String
+    let iconColor: Color
+    let providers: [ProviderItem]
+    @Binding var selectedProvider: String
+    let getAPIKey: (String) -> String?
+    let setAPIKey: (String, String) -> Void
+    let deleteAPIKey: (String) -> Void
+    
+    @State private var apiKeyText = ""
+    @State private var isEditingAPIKey = false
+    @State private var hasExistingKey = false
+    
+    private var selectedProviderItem: ProviderItem? {
+        providers.first { $0.id == selectedProvider }
+    }
+    
+    var body: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: UIConstants.Spacing.medium) {
+                // Header with Icon
+                HStack(spacing: UIConstants.Spacing.standard) {
+                    ZStack {
+                        if #available(iOS 26.0, macOS 26.0, *) {
+                            Image(systemName: icon)
+                                .font(.title2)
+                                .foregroundStyle(iconColor)
+                                .frame(width: 44, height: 44)
+                                .glassEffect(.regular.tint(iconColor.opacity(0.15)), in: .rect(cornerRadius: 10))
+                        } else {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(iconColor.opacity(0.15))
+                                .frame(width: 44, height: 44)
+                                .overlay(
+                                    Image(systemName: icon)
+                                        .font(.title3)
+                                        .foregroundStyle(iconColor)
+                                )
+                        }
+                    }
+                    
+                    Text(title)
+                        .font(.headline)
+                    
+                    Spacer()
+                }
+                
+                // Provider Selector Dropdown
+                VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
+                    Text("Select Provider")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
+                    Menu {
+                        ForEach(providers) { provider in
+                            Button(provider.name) {
+                                selectedProvider = provider.id
+                                checkExistingKey()
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(selectedProviderItem?.name ?? "Select...")
+                                    .font(.subheadline.weight(.medium))
+                                
+                                Text(selectedProviderItem?.description ?? "")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, UIConstants.Spacing.standard)
+                        .padding(.vertical, UIConstants.Spacing.medium)
+                        .background(.background.opacity(0.3))
+                        .cornerRadius(UIConstants.CornerRadius.medium)
+                    }
+                    .help("Choose your preferred provider")
+                }
+                
+                // API Key Section
+                if isEditingAPIKey {
+                    // Edit Mode - Show text field
+                    VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
+                        Text("API Key")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        
+                        SecureField("Enter API key", text: $apiKeyText)
+                            .textFieldStyle(.roundedBorder)
+                            .padding(.vertical, 4)
+                        
+                        HStack {
+                            Button("Cancel") {
+                                isEditingAPIKey = false
+                                apiKeyText = ""
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            
+                            Spacer()
+                            
+                            Button("Save") {
+                                setAPIKey(selectedProvider, apiKeyText)
+                                isEditingAPIKey = false
+                                hasExistingKey = !apiKeyText.isEmpty
+                                apiKeyText = ""
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+                            .disabled(apiKeyText.isEmpty)
+                        }
+                    }
+                    .padding(.top, UIConstants.Spacing.small)
+                } else {
+                    // View Mode - Show status and action buttons
+                    HStack {
+                        HStack(spacing: 4) {
+                            Image(systemName: hasExistingKey ? "checkmark.seal.fill" : "key.slash")
+                                .font(.caption)
+                                .foregroundStyle(hasExistingKey ? .green : .secondary)
+                            
+                            Text(hasExistingKey ? "API key configured" : "No API key")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        if hasExistingKey {
+                            Menu {
+                                Button("Update Key") {
+                                    isEditingAPIKey = true
+                                    apiKeyText = ""
+                                }
+                                
+                                Button("Remove Key", role: .destructive) {
+                                    deleteAPIKey(selectedProvider)
+                                    hasExistingKey = false
+                                }
+                            } label: {
+                                Image(systemName: "ellipsis.circle")
+                                    .font(.title3)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else {
+                            Button("Add API Key") {
+                                isEditingAPIKey = true
+                                apiKeyText = ""
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                    }
+                    .padding(.top, UIConstants.Spacing.small)
+                }
+            }
+        }
+        .onAppear {
+            checkExistingKey()
+        }
+        .onChange(of: selectedProvider) { oldValue, newValue in
+            checkExistingKey()
+            isEditingAPIKey = false
+            apiKeyText = ""
+        }
+    }
+    
+    private func checkExistingKey() {
+        let key = getAPIKey(selectedProvider)
+        hasExistingKey = key != nil && !key!.isEmpty
     }
 }
 
 // MARK: - General Settings Tab
 
 private struct GeneralSettingsView: View {
-    @Binding var autoLaunchEnabled: Bool
     @Binding var showingResetAlert: Bool
     var appState: AppState
     
-    @State private var selectedProvider: TranscriptionProviderType = .groq
-    @State private var groqAPIKey: String = ""
-    @State private var elevenLabsAPIKey: String = ""
-    @State private var deepgramAPIKey: String = ""
-    @State private var showAPIKey: Bool = false
-    @State private var selectedTTSProvider: TTSProviderType = .groq
-    @State private var openAIAPIKey: String = ""
-    @State private var showTTSAPIKey: Bool = false
-
+    @AppStorage("autoLaunchEnabled") private var autoLaunchEnabled = false
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: UIConstants.Spacing.section) {
@@ -302,225 +624,113 @@ private struct GeneralSettingsView: View {
                     Text("General")
                         .font(.title2)
                         .bold()
-
+                    
                     Text("Configure app behavior and preferences.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, UIConstants.Spacing.extraLarge)
-
-                Divider()
-
+                
                 // Startup Settings
-                VStack(alignment: .leading, spacing: UIConstants.Spacing.large) {
-                    Text("Startup")
-                        .font(.headline)
-
-                    Toggle(isOn: $autoLaunchEnabled) {
-                        VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
-                            Text("Launch at Login")
-                                .font(.subheadline)
-                            Text("Automatically start OpenWispher when you log in")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .toggleStyle(.switch)
-                    .onChange(of: autoLaunchEnabled) { oldValue, newValue in
-                        UserDefaults.standard.set(newValue, forKey: "autoLaunchEnabled")
-                        // TODO: Implement actual launch agent configuration
-                    }
-                }
-                .padding()
-                .glassEffect(.regular)
-
-                // Hotkey Settings
-                VStack(alignment: .leading, spacing: UIConstants.Spacing.large) {
-                    Text("Hotkey")
-                        .font(.headline)
-
-                    HStack {
-                        VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
-                            Text("Global Hotkey")
-                                .font(.subheadline)
-                            Text("Press to start/stop recording")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer()
-
-                        HStack(spacing: 4) {
-                            Text("⌥")
-                                .font(.system(size: 18, weight: .medium))
-                            Text("+")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Text("Space")
-                                .font(.system(size: 12, weight: .medium))
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .glassEffect(.regular)
-                    }
-                }
-                .padding()
-                .glassEffect(.regular)
-
-                // Transcription Provider Settings
-                VStack(alignment: .leading, spacing: UIConstants.Spacing.large) {
-                    Text("Transcription Provider")
-                        .font(.headline)
-                    
-                    Picker("Provider", selection: $selectedProvider) {
-                        ForEach(TranscriptionProviderType.allCases) { provider in
-                            Text(provider.displayName)
-                                .tag(provider)
-                        }
-                    }
-                    .pickerStyle(.radioGroup)
-                    .onChange(of: selectedProvider) { oldValue, newValue in
-                        UserDefaults.standard.set(newValue.rawValue, forKey: "selectedTranscriptionProvider")
-                        showAPIKey = false
-                    }
-                    
-                    // Provider description
-                    Text(selectedProvider.description)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    
-                    // API Key input for selected provider
-                    VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
-                        Text("\(selectedProvider.rawValue) API Key")
-                            .font(.subheadline)
+                GlassCard {
+                    VStack(alignment: .leading, spacing: UIConstants.Spacing.medium) {
+                        Text("Startup")
+                            .font(.headline)
                         
-                        HStack(spacing: UIConstants.Spacing.medium) {
-                            Group {
-                                if showAPIKey {
-                                    TextField("Enter API key", text: selectedAPIKeyBinding)
-                                } else {
-                                    SecureField("Enter API key", text: selectedAPIKeyBinding)
-                                }
+                        Toggle(isOn: $autoLaunchEnabled) {
+                            VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
+                                Text("Launch at Login")
+                                    .font(.subheadline)
+                                Text("Automatically start when you log in")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
-                            .textFieldStyle(.roundedBorder)
-                            
-                            Button {
-                                showAPIKey.toggle()
-                                if showAPIKey {
-                                    loadTranscriptionKeysFromKeychain()
-                                }
-                            } label: {
-                                Image(systemName: showAPIKey ? "eye.slash" : "eye")
-                            }
-                            .buttonStyle(.plain)
-                            .help(showAPIKey ? "Hide API key" : "Show API key")
                         }
-                    }
-                    .padding()
-                    .glassEffect(.regular.interactive())
-                }
-                .padding()
-                .glassEffect(.regular)
-
-                // Text-to-Speech Provider Settings
-                VStack(alignment: .leading, spacing: UIConstants.Spacing.large) {
-                    Text("Text-to-Speech Provider")
-                        .font(.headline)
-
-                    Picker("Provider", selection: $selectedTTSProvider) {
-                        ForEach(TTSProviderType.allCases) { provider in
-                            Text(provider.displayName)
-                                .tag(provider)
-                        }
-                    }
-                    .pickerStyle(.radioGroup)
-                    .onChange(of: selectedTTSProvider) { _, newValue in
-                        UserDefaults.standard.set(newValue.rawValue, forKey: "selectedTTSProvider")
-                        showTTSAPIKey = false
-                    }
-
-                    // API Key input for selected provider (OpenAI has separate key)
-                    VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
-                        Text("\(selectedTTSProvider.rawValue) API Key")
-                            .font(.subheadline)
-
-                        HStack(spacing: UIConstants.Spacing.medium) {
-                            Group {
-                                if showTTSAPIKey {
-                                    TextField("Enter API key", text: selectedTTSAPIKeyBinding)
-                                } else {
-                                    SecureField("Enter API key", text: selectedTTSAPIKeyBinding)
-                                }
-                            }
-                            .textFieldStyle(.roundedBorder)
-
-                            Button {
-                                showTTSAPIKey.toggle()
-                                if showTTSAPIKey {
-                                    loadTTSKeysFromKeychain()
-                                }
-                            } label: {
-                                Image(systemName: showTTSAPIKey ? "eye.slash" : "eye")
-                            }
-                            .buttonStyle(.plain)
-                            .help(showTTSAPIKey ? "Hide API key" : "Show API key")
-                        }
-                    }
-                    .padding()
-                    .glassEffect(.regular.interactive())
-                }
-                .padding()
-                .glassEffect(.regular)
-
-                // Status
-                VStack(alignment: .leading, spacing: UIConstants.Spacing.large) {
-                    Text("Status")
-                        .font(.headline)
-
-                    HStack {
-                        Circle()
-                            .fill(statusColor)
-                            .frame(width: 8, height: 8)
-
-                        Text(statusText)
-                            .font(.subheadline)
-
-                        Spacer()
-
-                        if !appState.lastTranscription.isEmpty {
-                            Text("Last: \(timeAgo)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                        .toggleStyle(.switch)
                     }
                 }
-                .padding()
-                .glassEffect(.regular)
-
-                Divider()
-
-                // Advanced
-                VStack(alignment: .leading, spacing: UIConstants.Spacing.large) {
-                    Text("Advanced")
-                        .font(.headline)
-
-                    Button(
-                        role: .destructive,
-                        action: {
-                            showingResetAlert = true
-                        }
-                    ) {
+                
+                // Hotkey Settings
+                GlassCard {
+                    VStack(alignment: .leading, spacing: UIConstants.Spacing.medium) {
+                        Text("Hotkey")
+                            .font(.headline)
+                        
                         HStack {
-                            Image(systemName: "arrow.counterclockwise")
-                            Text("Reset App")
+                            VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
+                                Text("Global Hotkey")
+                                    .font(.subheadline)
+                                Text("Press to start/stop recording")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            HStack(spacing: 4) {
+                                Text("⌥")
+                                    .font(.system(size: 18, weight: .medium))
+                                Text("+")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text("Space")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(.background.opacity(0.3))
+                            .cornerRadius(8)
                         }
-                        .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.glass)
-                    .controlSize(.large)
                 }
-                .padding()
-                .glassEffect(.regular)
+                
+                // Status
+                GlassCard {
+                    VStack(alignment: .leading, spacing: UIConstants.Spacing.medium) {
+                        Text("Status")
+                            .font(.headline)
+                        
+                        HStack {
+                            Circle()
+                                .fill(statusColor)
+                                .frame(width: 8, height: 8)
+                            
+                            Text(statusText)
+                                .font(.subheadline)
+                            
+                            Spacer()
+                            
+                            if !appState.lastTranscription.isEmpty {
+                                Text("Last: Just now")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+                
+                // Advanced - Reset
+                GlassCard {
+                    VStack(alignment: .leading, spacing: UIConstants.Spacing.medium) {
+                        Text("Advanced")
+                            .font(.headline)
+                        
+                        Button(
+                            role: .destructive,
+                            action: { showingResetAlert = true }
+                        ) {
+                            HStack {
+                                Image(systemName: "arrow.counterclockwise")
+                                Text("Reset App")
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .keyboardShortcut("r", modifiers: [.command, .shift])
+                        .help("Reset preferences and restart the app")
+                    }
+                }
             }
             .padding(.horizontal, UIConstants.Spacing.section)
             .padding(.bottom, UIConstants.Spacing.extraLarge)
@@ -531,133 +741,10 @@ private struct GeneralSettingsView: View {
                 resetApp()
             }
         } message: {
-            Text(
-                "This will clear all preferences and require you to complete onboarding again. Permissions will need to be re-granted."
-            )
-        }
-        .onAppear {
-            loadTranscriptionSettings()
+            Text("This will clear all preferences and require you to complete onboarding again. Permissions will need to be re-granted.")
         }
     }
     
-    private func loadTranscriptionSettings() {
-        // Load selected provider
-        if let savedProvider = UserDefaults.standard.string(forKey: "selectedTranscriptionProvider"),
-           let provider = TranscriptionProviderType(rawValue: savedProvider) {
-            selectedProvider = provider
-        }
-
-        // Load selected TTS provider
-        if let savedTTSProvider = UserDefaults.standard.string(forKey: "selectedTTSProvider"),
-           let ttsProvider = TTSProviderType(rawValue: savedTTSProvider) {
-            selectedTTSProvider = ttsProvider
-        }
-    }
-
-    private func loadTranscriptionKeysFromKeychain() {
-        groqAPIKey = SecureStorage.retrieveAPIKey(for: .groq) ?? ""
-        elevenLabsAPIKey = SecureStorage.retrieveAPIKey(for: .elevenLabs) ?? ""
-        deepgramAPIKey = SecureStorage.retrieveAPIKey(for: .deepgram) ?? ""
-    }
-
-    private func loadTTSKeysFromKeychain() {
-        openAIAPIKey = SecureStorage.retrieveTTSAPIKey(for: .openAI) ?? ""
-    }
-
-    private var selectedAPIKeyBinding: Binding<String> {
-        switch selectedProvider {
-        case .groq:
-            return Binding(
-                get: { groqAPIKey },
-                set: { newValue in
-                    groqAPIKey = newValue
-                    if newValue.isEmpty {
-                        try? SecureStorage.deleteAPIKey(for: .groq)
-                    } else {
-                        try? SecureStorage.storeAPIKey(newValue, for: .groq)
-                    }
-                }
-            )
-        case .elevenLabs:
-            return Binding(
-                get: { elevenLabsAPIKey },
-                set: { newValue in
-                    elevenLabsAPIKey = newValue
-                    if newValue.isEmpty {
-                        try? SecureStorage.deleteAPIKey(for: .elevenLabs)
-                    } else {
-                        try? SecureStorage.storeAPIKey(newValue, for: .elevenLabs)
-                    }
-                }
-            )
-        case .deepgram:
-            return Binding(
-                get: { deepgramAPIKey },
-                set: { newValue in
-                    deepgramAPIKey = newValue
-                    if newValue.isEmpty {
-                        try? SecureStorage.deleteAPIKey(for: .deepgram)
-                    } else {
-                        try? SecureStorage.storeAPIKey(newValue, for: .deepgram)
-                    }
-                }
-            )
-        }
-    }
-
-    private var selectedTTSAPIKeyBinding: Binding<String> {
-        switch selectedTTSProvider {
-        case .groq:
-            return Binding(
-                get: { groqAPIKey },
-                set: { newValue in
-                    groqAPIKey = newValue
-                    if newValue.isEmpty {
-                        try? SecureStorage.deleteAPIKey(for: .groq)
-                    } else {
-                        try? SecureStorage.storeAPIKey(newValue, for: .groq)
-                    }
-                }
-            )
-        case .elevenLabs:
-            return Binding(
-                get: { elevenLabsAPIKey },
-                set: { newValue in
-                    elevenLabsAPIKey = newValue
-                    if newValue.isEmpty {
-                        try? SecureStorage.deleteAPIKey(for: .elevenLabs)
-                    } else {
-                        try? SecureStorage.storeAPIKey(newValue, for: .elevenLabs)
-                    }
-                }
-            )
-        case .deepgram:
-            return Binding(
-                get: { deepgramAPIKey },
-                set: { newValue in
-                    deepgramAPIKey = newValue
-                    if newValue.isEmpty {
-                        try? SecureStorage.deleteAPIKey(for: .deepgram)
-                    } else {
-                        try? SecureStorage.storeAPIKey(newValue, for: .deepgram)
-                    }
-                }
-            )
-        case .openAI:
-            return Binding(
-                get: { openAIAPIKey },
-                set: { newValue in
-                    openAIAPIKey = newValue
-                    if newValue.isEmpty {
-                        try? SecureStorage.deleteTTSAPIKey(for: .openAI)
-                    } else {
-                        try? SecureStorage.storeTTSAPIKey(newValue, for: .openAI)
-                    }
-                }
-            )
-        }
-    }
-
     private var statusColor: Color {
         switch appState.recordingState {
         case .idle: return .green
@@ -667,7 +754,7 @@ private struct GeneralSettingsView: View {
         case .error: return .red
         }
     }
-
+    
     private var statusText: String {
         switch appState.recordingState {
         case .idle: return "Ready"
@@ -677,100 +764,20 @@ private struct GeneralSettingsView: View {
         case .error(let msg): return "Error: \(msg)"
         }
     }
-
-    private var timeAgo: String {
-        // Placeholder - would need to track timestamp
-        "Just now"
-    }
-
+    
     private func resetApp() {
-        // Clear all user defaults
         UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
         UserDefaults.standard.removeObject(forKey: "autoLaunchEnabled")
         UserDefaults.standard.removeObject(forKey: "selectedTranscriptionProvider")
         UserDefaults.standard.synchronize()
         
-        // Clear all API keys from secure Keychain storage
         SecureStorage.clearAllAPIKeys()
-
-        // Reset app state
+        
         appState.hasCompletedOnboarding = false
         appState.lastTranscription = ""
         appState.recordingState = .idle
-
-        // Restart app
+        
         NSApplication.shared.terminate(nil)
-    }
-}
-
-// MARK: - About Tab
-
-private struct AboutSettingsView: View {
-    var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-
-            // App Icon
-            Image(systemName: "waveform.circle.fill")
-                .font(.system(size: 80))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.pink, .purple],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-
-            // App Name and Version
-            VStack(spacing: 4) {
-                Text("OpenWispher")
-                    .font(.title)
-                    .bold()
-
-                Text("Version 1.0.0")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-
-                Text("Speech-to-Text, Instantly")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            Divider()
-                .padding(.horizontal, 60)
-
-            // Features
-            VStack(alignment: .leading, spacing: 12) {
-                FeatureRow(icon: "mic.fill", text: "Fast voice transcription")
-                FeatureRow(icon: "wand.and.stars", text: "Powered by Groq AI")
-                FeatureRow(icon: "keyboard.fill", text: "Auto-paste to any app")
-                FeatureRow(icon: "bolt.fill", text: "Global hotkey: ⌥ + Space")
-            }
-            .padding()
-            .glassEffect(.regular)
-            .padding(.horizontal, 40)
-
-            Spacer()
-
-            // Links
-            HStack(spacing: 20) {
-                Button("GitHub") {
-                    if let url = URL(string: "https://github.com") {
-                        NSWorkspace.shared.open(url)
-                    }
-                }
-                .buttonStyle(.link)
-
-                Button("Support") {
-                    if let url = URL(string: "mailto:support@openwispher.app") {
-                        NSWorkspace.shared.open(url)
-                    }
-                }
-                .buttonStyle(.link)
-            }
-            .font(.caption)
-            .padding(.bottom, 20)
-        }
     }
 }
 
@@ -779,7 +786,7 @@ private struct AboutSettingsView: View {
 private struct HistorySettingsView: View {
     var historyManager: HistoryManager?
     
-    @State private var retentionDays = 30
+    @AppStorage("historyRetentionDays") private var retentionDays = 30
     @State private var transcriptionCount = 0
     @State private var showingClearAllAlert = false
     
@@ -800,80 +807,79 @@ private struct HistorySettingsView: View {
                 }
                 .padding(.top, UIConstants.Spacing.extraLarge)
                 
-                Divider()
-                
                 // Retention Settings
-                VStack(alignment: .leading, spacing: UIConstants.Spacing.large) {
-                    Text("Retention Period")
-                        .font(.headline)
-                    
+                GlassCard {
                     VStack(alignment: .leading, spacing: UIConstants.Spacing.medium) {
-                        Text("Keep transcriptions for")
-                            .font(.subheadline)
+                        Text("Retention Period")
+                            .font(.headline)
                         
-                        Picker("Retention Days", selection: $retentionDays) {
-                            ForEach(retentionOptions, id: \.self) { days in
-                                Text("\(days) days").tag(days)
+                        VStack(alignment: .leading, spacing: UIConstants.Spacing.medium) {
+                            Text("Keep transcriptions for")
+                                .font(.subheadline)
+                            
+                            Picker("Retention Days", selection: $retentionDays) {
+                                ForEach(retentionOptions, id: \.self) { days in
+                                    Text("\(days) days").tag(days)
+                                }
                             }
+                            .pickerStyle(.menu)
+                            .onChange(of: retentionDays) { oldValue, newValue in
+                                historyManager?.updateRetentionDays(newValue)
+                            }
+                            .help("Choose how long to keep transcriptions")
+                            
+                            Text("Transcriptions older than this period will be automatically deleted (except favorites).")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
-                        .pickerStyle(.segmented)
-                        .onChange(of: retentionDays) { oldValue, newValue in
-                            historyManager?.updateRetentionDays(newValue)
-                        }
-                        
-                        Text("Transcriptions older than this period will be automatically deleted (except favorites).")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
                     }
                 }
-                .padding()
-                .glassEffect(.regular)
                 
                 // Statistics
-                VStack(alignment: .leading, spacing: UIConstants.Spacing.large) {
-                    Text("Statistics")
-                        .font(.headline)
-                    
-                    HStack {
-                        VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
-                            Text("Total Transcriptions")
-                                .font(.subheadline)
-                            Text("\(transcriptionCount)")
+                GlassCard {
+                    VStack(alignment: .leading, spacing: UIConstants.Spacing.medium) {
+                        Text("Statistics")
+                            .font(.headline)
+                        
+                        HStack {
+                            VStack(alignment: .leading, spacing: UIConstants.Spacing.small) {
+                                Text("Total Transcriptions")
+                                    .font(.subheadline)
+                                Text("\(transcriptionCount)")
+                                    .font(.title2)
+                                    .bold()
+                            }
+                            
+                            Spacer()
+                            
+                            Image(systemName: "doc.text.fill")
                                 .font(.title2)
-                                .bold()
+                                .foregroundStyle(.tint)
                         }
-                        
-                        Spacer()
-                        
-                        Image(systemName: "doc.text.fill")
-                            .font(.title2)
-                            .foregroundStyle(.tint)
                     }
                 }
-                .padding()
-                .glassEffect(.regular)
-                
-                Divider()
                 
                 // Data Management
-                VStack(alignment: .leading, spacing: UIConstants.Spacing.large) {
-                    Text("Data Management")
-                        .font(.headline)
-                    
-                    Button(role: .destructive) {
-                        showingClearAllAlert = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "trash")
-                            Text("Clear All History")
+                GlassCard {
+                    VStack(alignment: .leading, spacing: UIConstants.Spacing.medium) {
+                        Text("Data Management")
+                            .font(.headline)
+                        
+                        Button(role: .destructive) {
+                            showingClearAllAlert = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "trash")
+                                Text("Clear All History")
+                            }
+                            .frame(maxWidth: .infinity)
                         }
-                        .frame(maxWidth: .infinity)
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .keyboardShortcut(.delete, modifiers: [.command, .shift])
+                        .help("Permanently delete all transcriptions")
                     }
-                    .buttonStyle(.glass)
-                    .controlSize(.large)
                 }
-                .padding()
-                .glassEffect(.regular)
             }
             .padding(.horizontal, UIConstants.Spacing.section)
             .padding(.bottom, UIConstants.Spacing.extraLarge)
@@ -901,16 +907,115 @@ private struct HistorySettingsView: View {
     }
 }
 
+// MARK: - About Settings Tab
+
+private struct AboutSettingsView: View {
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            
+            // App Icon
+            if #available(iOS 26.0, macOS 26.0, *) {
+                Image(systemName: "waveform.circle.fill")
+                    .font(.system(size: 80))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.pink, .purple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .glassEffect(.regular, in: .circle)
+            } else {
+                Image(systemName: "waveform.circle.fill")
+                    .font(.system(size: 80))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.pink, .purple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+            
+            // App Name and Version
+            VStack(spacing: 4) {
+                Text("OpenWispher")
+                    .font(.title)
+                    .bold()
+                
+                Text("Version 1.0.0")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                Text("Speech-to-Text, Instantly")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Divider()
+                .padding(.horizontal, 60)
+            
+            // Features
+            if #available(iOS 26.0, macOS 26.0, *) {
+                GlassEffectContainer(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        FeatureRow(icon: "mic.fill", text: "Fast voice transcription")
+                        FeatureRow(icon: "wand.and.stars", text: "Powered by Groq AI")
+                        FeatureRow(icon: "keyboard.fill", text: "Auto-paste to any app")
+                        FeatureRow(icon: "bolt.fill", text: "Global hotkey: ⌥ + Space")
+                    }
+                    .padding()
+                    .glassEffect(.regular, in: .rect(cornerRadius: 12))
+                }
+                .padding(.horizontal, 40)
+            } else {
+                VStack(alignment: .leading, spacing: 12) {
+                    FeatureRow(icon: "mic.fill", text: "Fast voice transcription")
+                    FeatureRow(icon: "wand.and.stars", text: "Powered by Groq AI")
+                    FeatureRow(icon: "keyboard.fill", text: "Auto-paste to any app")
+                    FeatureRow(icon: "bolt.fill", text: "Global hotkey: ⌥ + Space")
+                }
+                .padding()
+                .background(.ultraThinMaterial)
+                .cornerRadius(12)
+                .padding(.horizontal, 40)
+            }
+            
+            Spacer()
+            
+            // Links
+            HStack(spacing: 20) {
+                Button("GitHub") {
+                    if let url = URL(string: "https://github.com") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+                .buttonStyle(.link)
+                
+                Button("Support") {
+                    if let url = URL(string: "mailto:support@openwispher.app") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+                .buttonStyle(.link)
+            }
+            .font(.caption)
+            .padding(.bottom, 20)
+        }
+    }
+}
+
 // MARK: - Feature Row Component
 
 private struct FeatureRow: View {
     let icon: String
     let text: String
-
+    
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
-                            .foregroundStyle(.tint)
+                .foregroundStyle(.tint)
                 .frame(width: 20)
             Text(text)
                 .font(.subheadline)

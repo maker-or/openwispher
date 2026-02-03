@@ -4,26 +4,26 @@
     "Localizable": [
       {
         "comment": "",
-        "key": "OPENWISPHER",
+        "key": "Openwispher",
         "location": {
           "startingColumn": 26,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "Home",
+        "location": {
+          "startingColumn": 25,
           "startingLine": 53
         }
       },
       {
         "comment": "",
-        "key": "Text-to-Speech unavailable",
+        "key": "Settings",
         "location": {
-          "startingColumn": 34,
-          "startingLine": 70
-        }
-      },
-      {
-        "comment": "",
-        "key": "",
-        "location": {
-          "startingColumn": 16,
-          "startingLine": 105
+          "startingColumn": 25,
+          "startingLine": 60
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "No transcriptions yet",
         "location": {
           "startingColumn": 30,
-          "startingLine": 211
+          "startingLine": 167
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "Copy transcription",
         "location": {
           "startingColumn": 53,
-          "startingLine": 238
+          "startingLine": 194
         }
       },
       {
@@ -47,7 +47,7 @@
         "key": "Copy",
         "location": {
           "startingColumn": 39,
-          "startingLine": 239
+          "startingLine": 195
         }
       },
       {
@@ -55,7 +55,7 @@
         "key": "Delete transcription",
         "location": {
           "startingColumn": 53,
-          "startingLine": 250
+          "startingLine": 206
         }
       },
       {
@@ -63,7 +63,7 @@
         "key": "Delete",
         "location": {
           "startingColumn": 39,
-          "startingLine": 251
+          "startingLine": 207
         }
       },
       {
@@ -71,7 +71,7 @@
         "key": "Permissions",
         "location": {
           "startingColumn": 26,
-          "startingLine": 345
+          "startingLine": 350
         }
       },
       {
@@ -79,7 +79,7 @@
         "key": "Microphone",
         "location": {
           "startingColumn": 34,
-          "startingLine": 353
+          "startingLine": 358
         }
       },
       {
@@ -87,7 +87,7 @@
         "key": "Request",
         "location": {
           "startingColumn": 40,
-          "startingLine": 361
+          "startingLine": 366
         }
       },
       {
@@ -95,7 +95,7 @@
         "key": "Accessibility",
         "location": {
           "startingColumn": 34,
-          "startingLine": 378
+          "startingLine": 382
         }
       },
       {
@@ -103,7 +103,7 @@
         "key": "Open Settings",
         "location": {
           "startingColumn": 40,
-          "startingLine": 386
+          "startingLine": 390
         }
       },
       {
@@ -111,7 +111,7 @@
         "key": "Transcription Provider",
         "location": {
           "startingColumn": 26,
-          "startingLine": 405
+          "startingLine": 404
         }
       },
       {
@@ -119,7 +119,7 @@
         "key": "%@ API Key",
         "location": {
           "startingColumn": 30,
-          "startingLine": 446
+          "startingLine": 440
         }
       },
       {
@@ -127,7 +127,7 @@
         "key": "Hide API key",
         "location": {
           "startingColumn": 48,
-          "startingLine": 480
+          "startingLine": 469
         }
       },
       {
@@ -135,7 +135,7 @@
         "key": "Show API key",
         "location": {
           "startingColumn": 65,
-          "startingLine": 480
+          "startingLine": 469
         }
       },
       {
@@ -143,7 +143,7 @@
         "key": "Hide API key",
         "location": {
           "startingColumn": 62,
-          "startingLine": 481
+          "startingLine": 470
         }
       },
       {
@@ -151,7 +151,7 @@
         "key": "Show API key",
         "location": {
           "startingColumn": 79,
-          "startingLine": 481
+          "startingLine": 470
         }
       },
       {
@@ -159,7 +159,7 @@
         "key": "Enter API Key",
         "location": {
           "startingColumn": 47,
-          "startingLine": 453
+          "startingLine": 447
         }
       },
       {
@@ -167,7 +167,7 @@
         "key": "Enter API Key",
         "location": {
           "startingColumn": 49,
-          "startingLine": 455
+          "startingLine": 449
         }
       },
       {
@@ -175,7 +175,7 @@
         "key": "Text-to-Speech Provider",
         "location": {
           "startingColumn": 26,
-          "startingLine": 489
+          "startingLine": 478
         }
       },
       {
@@ -183,7 +183,7 @@
         "key": "%@ API Key",
         "location": {
           "startingColumn": 30,
-          "startingLine": 529
+          "startingLine": 513
         }
       },
       {
@@ -191,7 +191,7 @@
         "key": "Hide API key",
         "location": {
           "startingColumn": 51,
-          "startingLine": 563
+          "startingLine": 542
         }
       },
       {
@@ -199,7 +199,7 @@
         "key": "Show API key",
         "location": {
           "startingColumn": 68,
-          "startingLine": 563
+          "startingLine": 542
         }
       },
       {
@@ -207,7 +207,7 @@
         "key": "Hide API key",
         "location": {
           "startingColumn": 65,
-          "startingLine": 564
+          "startingLine": 543
         }
       },
       {
@@ -215,7 +215,7 @@
         "key": "Show API key",
         "location": {
           "startingColumn": 82,
-          "startingLine": 564
+          "startingLine": 543
         }
       },
       {
@@ -223,7 +223,7 @@
         "key": "Enter API Key",
         "location": {
           "startingColumn": 47,
-          "startingLine": 536
+          "startingLine": 520
         }
       },
       {
@@ -231,7 +231,7 @@
         "key": "Enter API Key",
         "location": {
           "startingColumn": 49,
-          "startingLine": 538
+          "startingLine": 522
         }
       },
       {
@@ -239,7 +239,7 @@
         "key": "General",
         "location": {
           "startingColumn": 26,
-          "startingLine": 572
+          "startingLine": 551
         }
       },
       {
@@ -247,7 +247,7 @@
         "key": "Data",
         "location": {
           "startingColumn": 26,
-          "startingLine": 592
+          "startingLine": 567
         }
       },
       {
@@ -255,7 +255,7 @@
         "key": "Clear All History",
         "location": {
           "startingColumn": 34,
-          "startingLine": 601
+          "startingLine": 576
         }
       },
       {
@@ -263,7 +263,7 @@
         "key": "",
         "location": {
           "startingColumn": 20,
-          "startingLine": 744
+          "startingLine": 714
         }
       }
     ]

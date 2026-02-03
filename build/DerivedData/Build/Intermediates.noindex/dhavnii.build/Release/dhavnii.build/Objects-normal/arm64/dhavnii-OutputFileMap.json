@@ -93,6 +93,11 @@
     "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HotkeyManager.bc",
     "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HotkeyManager.o"
   },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/LiquidGlassHelpers.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/LiquidGlassHelpers.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/LiquidGlassHelpers.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/LiquidGlassHelpers.o"
+  },
   "/Users/harshithpasupuleti/code/dhavnii/dhavnii/NotchOverlayView.swift" : {
     "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/NotchOverlayView.o",
     "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/NotchOverlayView.bc",

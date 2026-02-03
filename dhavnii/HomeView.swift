@@ -6,65 +6,115 @@
 //
 
 import AppKit
-import SwiftUI
+internal import Combine
 import SwiftData
+import SwiftUI
 
 struct HomeView: View {
     @Bindable var appState: AppState
     var permissionManager: PermissionManager
     var historyManager: HistoryManager?
     var ttsService: TextToSpeechService?
-    
-    @State private var selectedTab: HomeTab = .home
-    
-    enum HomeTab: String, CaseIterable {
+
+    @StateObject private var homeViewModel: HomeContentViewModel
+    @SceneStorage("home.selectedSection") private var selectedSectionRaw: String = HomeSection.home
+        .rawValue
+
+    enum HomeSection: String, CaseIterable {
         case home = "Home"
         case settings = "Settings"
     }
-    
+
+    private var selectedSectionBinding: Binding<HomeSection> {
+        Binding(
+            get: { HomeSection(rawValue: selectedSectionRaw) ?? .home },
+            set: { selectedSectionRaw = $0.rawValue }
+        )
+    }
+
+    init(
+        appState: AppState,
+        permissionManager: PermissionManager,
+        historyManager: HistoryManager?,
+        ttsService: TextToSpeechService?
+    ) {
+        self.appState = appState
+        self.permissionManager = permissionManager
+        self.historyManager = historyManager
+        self.ttsService = ttsService
+        _homeViewModel = StateObject(
+            wrappedValue: HomeContentViewModel(historyManager: historyManager))
+    }
+
     var body: some View {
         ZStack {
             Color.clear
                 .ignoresSafeArea()
-            
-            // Cached Noise Texture Overlay (optimized - renders once)
 
-            VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Text("Openwispher")
-                        .font(.system(size: 22, weight: .regular))
-                        .foregroundStyle(.primary)
-                    Spacer()
+            NavigationSplitView {
+                List(selection: selectedSectionBinding) {
+                    Section {
+                        SidebarRow(
+                            title: "Home",
+                            icon: "house",
+                            isSelected: selectedSectionBinding.wrappedValue == .home
+                        )
+                        .tag(HomeSection.home)
+                        SidebarRow(
+                            title: "Settings",
+                            icon: "gear",
+                            isSelected: selectedSectionBinding.wrappedValue == .settings
+                        )
+                        .tag(HomeSection.settings)
+                    } header: {
+                        Text("Openwispher")
+                            .font(.headline)
+                            .textCase(nil)
+                            .foregroundStyle(.primary)
+                    }
                 }
-                .padding(.horizontal, 32)
-                .padding(.top, 32)
-                .padding(.bottom, 24)
-                
-                TabView(selection: $selectedTab) {
-                    HomeContentView(historyManager: historyManager)
-                        .tabItem {
-                            Label("Home", systemImage: "house")
-                        }
-                        .tag(HomeTab.home)
+                .listStyle(.sidebar)
+                .scrollContentBackground(.hidden)
+                .background(.ultraThinMaterial)
 
+            } detail: {
+                switch selectedSectionBinding.wrappedValue {
+                case .home:
+                    VStack(spacing: 0) {
+                        HomeContentView(viewModel: homeViewModel)
+                    }
+                case .settings:
                     SettingsContentView(
                         permissionManager: permissionManager,
                         appState: appState,
                         historyManager: historyManager
                     )
-                    .tabItem {
-                        Label("Settings", systemImage: "gear")
-                    }
-                    .tag(HomeTab.settings)
                 }
-                .tabViewStyle(.automatic)
             }
         }
         .frame(minWidth: 600, minHeight: 450)
         // ensure stable “light” Control Center style glass
-        .preferredColorScheme(.light)
-        .withToasts()
+        .preferredColorScheme(.none)
+
+    }
+}
+
+private struct SidebarRow: View {
+    let title: String
+    let icon: String
+    let isSelected: Bool
+
+    var body: some View {
+        Label(title, systemImage: icon)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(
+                        isSelected ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
+            )
+            .listRowBackground(Color.clear)
     }
 }
 
@@ -72,7 +122,7 @@ struct HomeView: View {
 /// Noise texture that renders once and caches the result as an image
 struct CachedNoiseTexture: View {
     @State private var noiseImage: NSImage?
-    
+
     var body: some View {
         GeometryReader { geometry in
             if let image = noiseImage {
@@ -87,31 +137,31 @@ struct CachedNoiseTexture: View {
             }
         }
     }
-    
+
     private func generateNoiseImage(size: CGSize) {
         // Generate noise on background thread to avoid blocking UI
         DispatchQueue.global(qos: .userInitiated).async {
             let width = Int(size.width)
             let height = Int(size.height)
-            
+
             guard width > 0 && height > 0 else { return }
-            
+
             let image = NSImage(size: size)
             image.lockFocus()
-            
+
             // Draw fewer, larger noise particles for better performance
             let particleCount = min(5000, (width * height) / 50)
-            
+
             NSColor.black.withAlphaComponent(0.05).setFill()
-            
+
             for _ in 0..<particleCount {
                 let x = CGFloat.random(in: 0..<CGFloat(width))
                 let y = CGFloat.random(in: 0..<CGFloat(height))
                 NSBezierPath(rect: CGRect(x: x, y: y, width: 1, height: 1)).fill()
             }
-            
+
             image.unlockFocus()
-            
+
             DispatchQueue.main.async {
                 self.noiseImage = image
             }
@@ -128,15 +178,14 @@ struct NoiseTexture: View {
 
 // MARK: - Home Content (Transcriptions) - Event-driven refresh
 struct HomeContentView: View {
-    var historyManager: HistoryManager?
-    @State private var transcriptions: [TranscriptionRecord] = []
+    @ObservedObject var viewModel: HomeContentViewModel
     @Environment(\.scenePhase) private var scenePhase
     @State private var recentlyCopiedId: UUID?
-    
+
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                if transcriptions.isEmpty {
+                if viewModel.transcriptions.isEmpty {
                     VStack(spacing: 12) {
                         Spacer()
                             .frame(height: 100)
@@ -145,7 +194,7 @@ struct HomeContentView: View {
                             .foregroundStyle(.black.opacity(0.4))
                     }
                 } else {
-                    ForEach(transcriptions, id: \.id) { (record: TranscriptionRecord) in
+                    ForEach(viewModel.transcriptions, id: \.id) { (record: TranscriptionRecord) in
                         VStack(alignment: .leading, spacing: 0) {
                             Text(record.text)
                                 .font(.system(size: 14))
@@ -161,9 +210,12 @@ struct HomeContentView: View {
                                 Button {
                                     copy(record)
                                 } label: {
-                                    Image(systemName: recentlyCopiedId == record.id ? "checkmark" : "doc.on.doc")
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundStyle(.black.opacity(0.55))
+                                    Image(
+                                        systemName: recentlyCopiedId == record.id
+                                            ? "checkmark" : "doc.on.doc"
+                                    )
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundStyle(.black.opacity(0.55))
                                 }
                                 .buttonStyle(.plain)
                                 .handCursor()
@@ -186,7 +238,7 @@ struct HomeContentView: View {
                             }
                             .padding(.horizontal, 32)
                             .padding(.bottom, 12)
-                            
+
                             Rectangle()
                                 .fill(Color.black.opacity(0.1))
                                 .frame(height: 1)
@@ -198,23 +250,20 @@ struct HomeContentView: View {
         }
         .onAppear {
             // Initial load
-            refreshTranscriptions()
+            viewModel.refreshIfNeeded()
         }
-        .onReceive(NotificationCenter.default.publisher(for: TranscriptionService.transcriptionSavedNotification)) { _ in
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: TranscriptionService.transcriptionSavedNotification)
+        ) { _ in
             // Event-driven refresh when new transcription is saved
-            refreshTranscriptions()
+            viewModel.refreshIfNeeded(force: true)
         }
         .onChange(of: scenePhase) { _, newPhase in
             // Refresh when becoming active
             if newPhase == .active {
-                refreshTranscriptions()
+                viewModel.refreshIfNeeded(force: true)
             }
-        }
-    }
-    
-    private func refreshTranscriptions() {
-        if let manager = historyManager {
-            transcriptions = manager.fetchAllTranscriptions()
         }
     }
 
@@ -231,8 +280,66 @@ struct HomeContentView: View {
     }
 
     private func delete(_ record: TranscriptionRecord) {
+        viewModel.delete(record)
+    }
+}
+
+@MainActor
+final class HomeContentViewModel: ObservableObject {
+    @Published var transcriptions: [TranscriptionRecord] = []
+
+    private var historyManager: HistoryManager?
+    private var hasLoadedOnce = false
+
+    init(historyManager: HistoryManager?) {
+        self.historyManager = historyManager
+    }
+
+    func refreshIfNeeded(force: Bool = false) {
+        if force || !hasLoadedOnce {
+            logLoad("refresh start", count: transcriptions.count)
+            load()
+            hasLoadedOnce = true
+        }
+    }
+
+    func delete(_ record: TranscriptionRecord) {
         historyManager?.deleteTranscription(record)
-        refreshTranscriptions()
+        load()
+    }
+
+    private func load() {
+        guard let manager = historyManager else {
+            transcriptions = []
+            return
+        }
+        let newItems = manager.fetchAllTranscriptions()
+        if shouldUpdateTranscriptions(newItems) {
+            transcriptions = newItems
+            logLoad("updated", count: newItems.count)
+        } else {
+            logLoad("skipped (no changes)", count: newItems.count)
+        }
+    }
+
+    private func shouldUpdateTranscriptions(_ newItems: [TranscriptionRecord]) -> Bool {
+        if newItems.count != transcriptions.count {
+            return true
+        }
+        for (lhs, rhs) in zip(newItems, transcriptions) {
+            if lhs.id != rhs.id || lhs.text != rhs.text || lhs.timestamp != rhs.timestamp
+                || lhs.isFavorite != rhs.isFavorite
+            {
+                return true
+            }
+        }
+        return false
+    }
+
+    private func logLoad(_ message: String, count: Int) {
+        #if DEBUG
+            print("🧭 [HomeContentViewModel] load \(message) (count: \(count))")
+        #endif
     }
 }
 
@@ -248,8 +355,8 @@ private struct HandCursorOnHover: ViewModifier {
     }
 }
 
-private extension View {
-    func handCursor() -> some View {
+extension View {
+    fileprivate func handCursor() -> some View {
         modifier(HandCursorOnHover())
     }
 }
@@ -259,26 +366,23 @@ struct SettingsContentView: View {
     var permissionManager: PermissionManager
     @Bindable var appState: AppState
     var historyManager: HistoryManager?
-    
+
     @AppStorage("selectedTranscriptionProvider") private var selectedProviderRaw = "Groq"
     @AppStorage("selectedTTSProvider") private var selectedTTSProviderRaw = "Groq"
     @State private var groqAPIKey = ""
     @State private var elevenLabsAPIKey = ""
     @State private var deepgramAPIKey = ""
     @State private var openAIAPIKey = ""
-    @State private var showAPIKey = false
-    @State private var showTTSAPIKey = false
-    
+    @State private var isEditingTranscriptionKey = false
+    @State private var isEditingTTSKey = false
+    @State private var hasTranscriptionKey = false
+    @State private var hasTTSKey = false
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 // Section: Permissions
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Permissions")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.black.opacity(0.5))
-                        .textCase(.uppercase)
-                    
+                SettingsSection(title: "Permissions") {
                     VStack(spacing: 0) {
                         // Microphone
                         HStack {
@@ -300,10 +404,10 @@ struct SettingsContentView: View {
                             }
                         }
                         .padding()
-                        
+
                         Divider()
                             .background(Color.black.opacity(0.1))
-                        
+
                         // Accessibility
                         HStack {
                             Text("Accessibility")
@@ -325,35 +429,20 @@ struct SettingsContentView: View {
                     }
                     .liquidGlassSurface(cornerRadius: 8)
                 }
-                
-                // Section: Provider
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Transcription Provider")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.black.opacity(0.5))
-                        .textCase(.uppercase)
-                    
+
+                // Section: Transcription Provider
+                SettingsSection(title: "Transcription Provider") {
                     VStack(spacing: 0) {
                         ForEach(TranscriptionProviderType.allCases) { provider in
-                            Button {
+                            ProviderRow(
+                                name: provider.displayName,
+                                isSelected: selectedProviderRaw == provider.rawValue
+                            ) {
                                 selectedProviderRaw = provider.rawValue
-                                showAPIKey = false
-                            } label: {
-                                HStack {
-                                    Text(provider.displayName)
-                                        .font(.system(size: 14))
-                                        .foregroundStyle(.black.opacity(0.8))
-                                    Spacer()
-                                    if selectedProviderRaw == provider.rawValue {
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 12))
-                                            .foregroundStyle(.black.opacity(0.8))
-                                    }
-                                }
-                                .padding()
+                                isEditingTranscriptionKey = false
+                                checkTranscriptionKeyStatus()
                             }
-                            .buttonStyle(.plain)
-                            
+
                             if provider != TranscriptionProviderType.allCases.last {
                                 Divider()
                                     .background(Color.black.opacity(0.1))
@@ -362,71 +451,55 @@ struct SettingsContentView: View {
                     }
                     .liquidGlassSurface(cornerRadius: 8)
 
-                    // API Key (shown for selected provider)
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("\(selectedProviderRaw) API Key")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.black.opacity(0.5))
-
-                        HStack(spacing: 8) {
-                            Group {
-                                if showAPIKey {
-                                    TextField("Enter API Key", text: selectedAPIKeyBinding)
-                                } else {
-                                    SecureField("Enter API Key", text: selectedAPIKeyBinding)
+                    // API Key Management (Hidden by default)
+                    APIKeySection(
+                        providerName: selectedProviderRaw,
+                        isEditing: $isEditingTranscriptionKey,
+                        hasKey: hasTranscriptionKey,
+                        onAdd: { isEditingTranscriptionKey = true },
+                        onUpdate: { isEditingTranscriptionKey = true },
+                        onRemove: {
+                            deleteTranscriptionKey()
+                            hasTranscriptionKey = false
+                        },
+                        content: {
+                            HStack(spacing: 8) {
+                                SecureField("Enter API Key", text: transcriptionKeyBinding)
+                                    .textFieldStyle(.plain)
+                                    .padding(10)
+                                    .liquidGlassSurface(cornerRadius: 8, interactive: true)
+                                
+                                Button("Cancel") {
+                                    isEditingTranscriptionKey = false
                                 }
-                            }
-                            .textFieldStyle(.plain)
-                            .padding(10)
-                            .liquidGlassSurface(cornerRadius: 8, interactive: true)
-
-                            Button {
-                                showAPIKey.toggle()
-                                if showAPIKey {
-                                    loadAPIKeysFromKeychain()
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                
+                                Button("Save") {
+                                    isEditingTranscriptionKey = false
+                                    hasTranscriptionKey = !transcriptionKeyBinding.wrappedValue.isEmpty
                                 }
-                            } label: {
-                                Image(systemName: showAPIKey ? "eye.slash" : "eye")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(.black.opacity(0.55))
-                                    .frame(width: 28, height: 28)
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
+                                .disabled(transcriptionKeyBinding.wrappedValue.isEmpty)
                             }
-                            .buttonStyle(.plain)
-                            .handCursor()
-                            .help(showAPIKey ? "Hide API key" : "Show API key")
-                            .accessibilityLabel(showAPIKey ? "Hide API key" : "Show API key")
                         }
-                    }
+                    )
                     .padding(.top, 10)
                 }
-                
-                // Section: Text-to-Speech Provider
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Text-to-Speech Provider")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.black.opacity(0.5))
-                        .textCase(.uppercase)
 
+                // Section: Text-to-Speech Provider
+                SettingsSection(title: "Text-to-Speech Provider") {
                     VStack(spacing: 0) {
                         ForEach(TTSProviderType.allCases) { provider in
-                            Button {
+                            ProviderRow(
+                                name: provider.displayName,
+                                isSelected: selectedTTSProviderRaw == provider.rawValue
+                            ) {
                                 selectedTTSProviderRaw = provider.rawValue
-                                showTTSAPIKey = false
-                            } label: {
-                                HStack {
-                                    Text(provider.displayName)
-                                        .font(.system(size: 14))
-                                        .foregroundStyle(.black.opacity(0.8))
-                                    Spacer()
-                                    if selectedTTSProviderRaw == provider.rawValue {
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 12))
-                                            .foregroundStyle(.black.opacity(0.8))
-                                    }
-                                }
-                                .padding()
+                                isEditingTTSKey = false
+                                checkTTSKeyStatus()
                             }
-                            .buttonStyle(.plain)
 
                             if provider != TTSProviderType.allCases.last {
                                 Divider()
@@ -436,66 +509,58 @@ struct SettingsContentView: View {
                     }
                     .liquidGlassSurface(cornerRadius: 8)
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("\(selectedTTSProviderRaw) API Key")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.black.opacity(0.5))
-
-                        HStack(spacing: 8) {
-                            Group {
-                                if showTTSAPIKey {
-                                    TextField("Enter API Key", text: selectedTTSAPIKeyBinding)
-                                } else {
-                                    SecureField("Enter API Key", text: selectedTTSAPIKeyBinding)
+                    // API Key Management (Hidden by default)
+                    APIKeySection(
+                        providerName: selectedTTSProviderRaw,
+                        isEditing: $isEditingTTSKey,
+                        hasKey: hasTTSKey,
+                        onAdd: { isEditingTTSKey = true },
+                        onUpdate: { isEditingTTSKey = true },
+                        onRemove: {
+                            deleteTTSKey()
+                            hasTTSKey = false
+                        },
+                        content: {
+                            HStack(spacing: 8) {
+                                SecureField("Enter API Key", text: ttsKeyBinding)
+                                    .textFieldStyle(.plain)
+                                    .padding(10)
+                                    .liquidGlassSurface(cornerRadius: 8, interactive: true)
+                                
+                                Button("Cancel") {
+                                    isEditingTTSKey = false
                                 }
-                            }
-                            .textFieldStyle(.plain)
-                            .padding(10)
-                            .liquidGlassSurface(cornerRadius: 8, interactive: true)
-
-                            Button {
-                                showTTSAPIKey.toggle()
-                                if showTTSAPIKey {
-                                    loadAPIKeysFromKeychain()
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                
+                                Button("Save") {
+                                    isEditingTTSKey = false
+                                    hasTTSKey = !ttsKeyBinding.wrappedValue.isEmpty
                                 }
-                            } label: {
-                                Image(systemName: showTTSAPIKey ? "eye.slash" : "eye")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(.black.opacity(0.55))
-                                    .frame(width: 28, height: 28)
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
+                                .disabled(ttsKeyBinding.wrappedValue.isEmpty)
                             }
-                            .buttonStyle(.plain)
-                            .handCursor()
-                            .help(showTTSAPIKey ? "Hide API key" : "Show API key")
-                            .accessibilityLabel(showTTSAPIKey ? "Hide API key" : "Show API key")
                         }
-                    }
+                    )
                     .padding(.top, 10)
                 }
 
                 // Section: General
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("General")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.black.opacity(0.5))
-                        .textCase(.uppercase)
-                    
+                SettingsSection(title: "General") {
                     VStack(spacing: 0) {
-                        ToggleRow(title: "Launch at Login", isOn: Binding(
-                            get: { UserDefaults.standard.bool(forKey: "autoLaunchEnabled") },
-                            set: { UserDefaults.standard.set($0, forKey: "autoLaunchEnabled") }
-                        ))
+                        ToggleRow(
+                            title: "Launch at Login",
+                            isOn: Binding(
+                                get: { UserDefaults.standard.bool(forKey: "autoLaunchEnabled") },
+                                set: { UserDefaults.standard.set($0, forKey: "autoLaunchEnabled") }
+                            ))
                     }
                     .liquidGlassSurface(cornerRadius: 8)
                 }
-                
+
                 // Section: Data
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Data")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.black.opacity(0.5))
-                        .textCase(.uppercase)
-                    
+                SettingsSection(title: "Data") {
                     Button {
                         historyManager?.deleteAllTranscriptions()
                     } label: {
@@ -514,7 +579,8 @@ struct SettingsContentView: View {
             .padding(.horizontal, 32)
         }
         .onAppear {
-            // Defer keychain reads until the user explicitly reveals keys.
+            checkTranscriptionKeyStatus()
+            checkTTSKeyStatus()
         }
     }
 
@@ -522,12 +588,12 @@ struct SettingsContentView: View {
         TranscriptionProviderType(rawValue: selectedProviderRaw) ?? .groq
     }
 
-    private var selectedAPIKeyBinding: Binding<String> {
+    private var transcriptionKeyBinding: Binding<String> {
         switch selectedProvider {
         case .groq:
             return Binding(
                 get: { groqAPIKey },
-                set: { 
+                set: {
                     groqAPIKey = $0
                     if $0.isEmpty {
                         try? SecureStorage.deleteAPIKey(for: .groq)
@@ -539,7 +605,7 @@ struct SettingsContentView: View {
         case .elevenLabs:
             return Binding(
                 get: { elevenLabsAPIKey },
-                set: { 
+                set: {
                     elevenLabsAPIKey = $0
                     if $0.isEmpty {
                         try? SecureStorage.deleteAPIKey(for: .elevenLabs)
@@ -551,7 +617,7 @@ struct SettingsContentView: View {
         case .deepgram:
             return Binding(
                 get: { deepgramAPIKey },
-                set: { 
+                set: {
                     deepgramAPIKey = $0
                     if $0.isEmpty {
                         try? SecureStorage.deleteAPIKey(for: .deepgram)
@@ -567,7 +633,7 @@ struct SettingsContentView: View {
         TTSProviderType(rawValue: selectedTTSProviderRaw) ?? .groq
     }
 
-    private var selectedTTSAPIKeyBinding: Binding<String> {
+    private var ttsKeyBinding: Binding<String> {
         switch selectedTTSProvider {
         case .groq:
             return Binding(
@@ -619,30 +685,171 @@ struct SettingsContentView: View {
             )
         }
     }
-    
-    private func loadAPIKeysFromKeychain() {
-        groqAPIKey = SecureStorage.retrieveAPIKey(for: .groq) ?? ""
-        elevenLabsAPIKey = SecureStorage.retrieveAPIKey(for: .elevenLabs) ?? ""
-        deepgramAPIKey = SecureStorage.retrieveAPIKey(for: .deepgram) ?? ""
-        openAIAPIKey = SecureStorage.retrieveTTSAPIKey(for: .openAI) ?? ""
+
+    private func checkTranscriptionKeyStatus() {
+        let key = SecureStorage.retrieveAPIKey(for: selectedProvider)
+        hasTranscriptionKey = key != nil && !key!.isEmpty
+    }
+
+    private func checkTTSKeyStatus() {
+        let key: String?
+        switch selectedTTSProvider {
+        case .openAI:
+            key = SecureStorage.retrieveTTSAPIKey(for: .openAI)
+        default:
+            key = SecureStorage.retrieveAPIKey(for: TranscriptionProviderType(rawValue: selectedTTSProviderRaw) ?? .groq)
+        }
+        hasTTSKey = key != nil && !key!.isEmpty
+    }
+
+    private func deleteTranscriptionKey() {
+        try? SecureStorage.deleteAPIKey(for: selectedProvider)
+    }
+
+    private func deleteTTSKey() {
+        switch selectedTTSProvider {
+        case .openAI:
+            try? SecureStorage.deleteTTSAPIKey(for: .openAI)
+        default:
+            if let provider = TranscriptionProviderType(rawValue: selectedTTSProviderRaw) {
+                try? SecureStorage.deleteAPIKey(for: provider)
+            }
+        }
     }
 }
 
-struct ToggleRow: View {
+// MARK: - Settings Section
+private struct SettingsSection<Content: View>: View {
+    let title: String
+    let content: Content
+
+    init(title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.black.opacity(0.5))
+                .textCase(.uppercase)
+
+            content
+        }
+    }
+}
+
+// MARK: - Provider Row
+private struct ProviderRow: View {
+    let name: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Text(name)
+                    .font(.system(size: 14))
+                    .foregroundStyle(.black.opacity(0.8))
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.black.opacity(0.8))
+                }
+            }
+            .padding()
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - API Key Section
+private struct APIKeySection<Content: View>: View {
+    let providerName: String
+    @Binding var isEditing: Bool
+    let hasKey: Bool
+    let onAdd: () -> Void
+    let onUpdate: () -> Void
+    let onRemove: () -> Void
+    let content: Content
+
+    init(
+        providerName: String,
+        isEditing: Binding<Bool>,
+        hasKey: Bool,
+        onAdd: @escaping () -> Void,
+        onUpdate: @escaping () -> Void,
+        onRemove: @escaping () -> Void,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.providerName = providerName
+        self._isEditing = isEditing
+        self.hasKey = hasKey
+        self.onAdd = onAdd
+        self.onUpdate = onUpdate
+        self.onRemove = onRemove
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("\(providerName) API Key")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.black.opacity(0.5))
+
+            if isEditing {
+                content
+            } else {
+                HStack {
+                    HStack(spacing: 4) {
+                        Image(systemName: hasKey ? "checkmark.seal.fill" : "key.slash")
+                            .font(.system(size: 12))
+                            .foregroundStyle(hasKey ? .green : .secondary)
+
+                        Text(hasKey ? "API key configured" : "No API key")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    if hasKey {
+                        Menu {
+                            Button("Update Key", action: onUpdate)
+                            Button("Remove Key", role: .destructive, action: onRemove)
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                                .font(.system(size: 16))
+                                .foregroundStyle(.secondary)
+                        }
+                    } else {
+                        Button("Add API Key", action: onAdd)
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Toggle Row
+private struct ToggleRow: View {
     let title: String
     @Binding var isOn: Bool
-    
+
     var body: some View {
         HStack {
             Text(title)
                 .font(.system(size: 14))
-                                            .foregroundStyle(.black.opacity(0.8))
+                .foregroundStyle(.black.opacity(0.8))
             Spacer()
             Toggle("", isOn: $isOn)
                 .toggleStyle(.switch)
                 .labelsHidden()
         }
         .padding()
-        .liquidGlassSurface(cornerRadius: 8, interactive: true)
     }
 }

@@ -1,0 +1,206 @@
+{
+  "" : {
+    "const-values" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/dhavnii-primary.swiftconstvalues",
+    "dependencies" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/dhavnii-primary.d",
+    "diagnostics" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/dhavnii-primary.dia",
+    "emit-module-dependencies" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/dhavnii-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/dhavnii-primary-emit-module.dia",
+    "pch" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/dhavnii-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/dhavnii-primary.swiftdeps"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/AnimationHelpers.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/AnimationHelpers.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/AnimationHelpers.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/AnimationHelpers.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/AppState.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/AppState.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/AppState.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/AppState.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/AudioRecorder.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/AudioRecorder.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/AudioRecorder.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/AudioRecorder.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/CLIHandler.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/CLIHandler.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/CLIHandler.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/CLIHandler.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/ClipboardManager.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ClipboardManager.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ClipboardManager.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ClipboardManager.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/ContentView.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/DeepgramAPIClient.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/DeepgramAPIClient.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/DeepgramAPIClient.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/DeepgramAPIClient.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/DeepgramTTSClient.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/DeepgramTTSClient.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/DeepgramTTSClient.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/DeepgramTTSClient.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/ElevenLabsAPIClient.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ElevenLabsAPIClient.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ElevenLabsAPIClient.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ElevenLabsAPIClient.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/ElevenLabsTTSClient.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ElevenLabsTTSClient.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ElevenLabsTTSClient.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/ElevenLabsTTSClient.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/GroqAPIClient.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/GroqAPIClient.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/GroqAPIClient.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/GroqAPIClient.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/GroqTTSClient.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/GroqTTSClient.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/GroqTTSClient.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/GroqTTSClient.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/HistoryManager.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HistoryManager.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HistoryManager.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HistoryManager.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/HistoryView.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HistoryView.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HistoryView.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HistoryView.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/HomeView.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HomeView.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HomeView.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HomeView.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/HotkeyManager.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HotkeyManager.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HotkeyManager.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/HotkeyManager.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/LiquidGlassHelpers.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/LiquidGlassHelpers.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/LiquidGlassHelpers.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/LiquidGlassHelpers.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/NotchOverlayView.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/NotchOverlayView.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/NotchOverlayView.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/NotchOverlayView.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/NotchWindowController.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/NotchWindowController.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/NotchWindowController.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/NotchWindowController.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/OnboardingView.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/OnboardingView.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/OnboardingView.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/OnboardingView.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/OpenAITTSClient.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/OpenAITTSClient.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/OpenAITTSClient.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/OpenAITTSClient.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/PermissionManager.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/PermissionManager.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/PermissionManager.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/PermissionManager.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/SecureStorage.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/SecureStorage.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/SecureStorage.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/SecureStorage.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/SettingsView.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/SettingsView.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/TTSAudioPlayer.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TTSAudioPlayer.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TTSAudioPlayer.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TTSAudioPlayer.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/TTSNotchOverlayView.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TTSNotchOverlayView.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TTSNotchOverlayView.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TTSNotchOverlayView.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/TTSNotchWindowController.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TTSNotchWindowController.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TTSNotchWindowController.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TTSNotchWindowController.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/TextToSpeechProvider.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TextToSpeechProvider.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TextToSpeechProvider.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TextToSpeechProvider.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/TextToSpeechService.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TextToSpeechService.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TextToSpeechService.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TextToSpeechService.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/TextToSpeechView.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TextToSpeechView.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TextToSpeechView.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TextToSpeechView.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/TranscriptionHistory.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TranscriptionHistory.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TranscriptionHistory.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TranscriptionHistory.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/TranscriptionProvider.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TranscriptionProvider.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TranscriptionProvider.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TranscriptionProvider.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/TranscriptionService.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TranscriptionService.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TranscriptionService.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/TranscriptionService.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/UIConstants.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/UIConstants.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/UIConstants.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/UIConstants.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/UserFeedbackSystem.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/UserFeedbackSystem.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/UserFeedbackSystem.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/UserFeedbackSystem.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/VisualEffectBlur.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/VisualEffectBlur.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/VisualEffectBlur.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/VisualEffectBlur.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/WindowConfigurator.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/WindowConfigurator.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/WindowConfigurator.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/WindowConfigurator.o"
+  },
+  "/Users/harshithpasupuleti/code/dhavnii/dhavnii/dhavniiApp.swift" : {
+    "index-unit-output-path" : "/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/dhavniiApp.o",
+    "llvm-bc" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/dhavniiApp.bc",
+    "object" : "/Users/harshithpasupuleti/code/dhavnii/build/DerivedData/Build/Intermediates.noindex/dhavnii.build/Release/dhavnii.build/Objects-normal/arm64/dhavniiApp.o"
+  }
+}

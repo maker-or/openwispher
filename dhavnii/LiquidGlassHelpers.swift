@@ -68,7 +68,7 @@ internal extension View {
     func seamlessToolbarWindowBackground() -> some View {
         if #available(macOS 15.0, *) {
             self
-                .toolbarBackground(.clear, for: .windowToolbar)
+                .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
                 .containerBackground(.ultraThinMaterial, for: .window)
         } else {
             self

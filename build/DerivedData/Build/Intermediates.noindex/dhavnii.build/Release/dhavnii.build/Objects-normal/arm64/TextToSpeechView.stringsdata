@@ -23,7 +23,7 @@
         "key": "Provider",
         "location": {
           "startingColumn": 26,
-          "startingLine": 45
+          "startingLine": 37
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "Provider",
         "location": {
           "startingColumn": 28,
-          "startingLine": 49
+          "startingLine": 41
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "Speak",
         "location": {
           "startingColumn": 28,
-          "startingLine": 62
+          "startingLine": 54
         }
       },
       {
@@ -47,7 +47,7 @@
         "key": "Pause",
         "location": {
           "startingColumn": 28,
-          "startingLine": 73
+          "startingLine": 65
         }
       },
       {
@@ -55,7 +55,7 @@
         "key": "Resume",
         "location": {
           "startingColumn": 28,
-          "startingLine": 78
+          "startingLine": 70
         }
       },
       {
@@ -63,7 +63,7 @@
         "key": "Stop",
         "location": {
           "startingColumn": 28,
-          "startingLine": 83
+          "startingLine": 75
         }
       },
       {
@@ -71,7 +71,7 @@
         "key": "CLI Usage",
         "location": {
           "startingColumn": 26,
-          "startingLine": 92
+          "startingLine": 84
         }
       },
       {
@@ -79,7 +79,7 @@
         "key": "openwispher-speak \"Hello, I am an AI agent\"",
         "location": {
           "startingColumn": 26,
-          "startingLine": 96
+          "startingLine": 88
         }
       }
     ]
