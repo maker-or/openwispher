@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  dhavnii
+//  OpenWispher
 //
 //  Created by Harshith Pasupuleti on 07/01/26.
 //

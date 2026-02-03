@@ -1,0 +1,40 @@
+{
+  "source": "/Users/harshithpasupuleti/code/dhavnii/dhavnii/TTSNotchOverlayView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Speaking",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 149
+        }
+      },
+      {
+        "comment": "",
+        "key": "Paused",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 153
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ready",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 161
+        }
+      },
+      {
+        "comment": "",
+        "key": "Generating",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 166
+        }
+      }
+    ]
+  },
+  "version": 1
+}

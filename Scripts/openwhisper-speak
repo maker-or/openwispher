@@ -1,0 +1,84 @@
+#!/bin/bash
+#
+# openwhisper-speak - CLI tool for triggering TTS in OpenWhisper
+#
+
+set -e
+
+TEXT=""
+PROVIDER=""
+VOICE=""
+FILE=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --provider)
+      PROVIDER="$2"
+      shift 2
+      ;;
+    --voice)
+      VOICE="$2"
+      shift 2
+      ;;
+    --file)
+      FILE="$2"
+      shift 2
+      ;;
+    -*)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+    *)
+      TEXT="$1"
+      shift
+      ;;
+  esac
+done
+
+if [[ -n "$FILE" ]]; then
+  if [[ ! -f "$FILE" ]]; then
+    echo "File not found: $FILE"
+    exit 1
+  fi
+  TEXT="$(cat "$FILE")"
+fi
+
+if [[ -z "$TEXT" ]]; then
+  echo "Usage: openwhisper-speak \"text\" [--provider groq|deepgram|elevenlabs|openai] [--voice voiceId] [--file path]"
+  exit 1
+fi
+
+if ! pgrep -x "dhavnii" > /dev/null; then
+  echo "Error: OpenWhisper is not running"
+  exit 1
+fi
+
+TEXT_ENV="$TEXT"
+PROVIDER_ENV="$PROVIDER"
+VOICE_ENV="$VOICE"
+
+TEXT="$TEXT_ENV" PROVIDER="$PROVIDER_ENV" VOICE="$VOICE_ENV" /usr/bin/osascript -l JavaScript <<'JXA'
+ObjC.import('Foundation')
+
+var env = $.NSProcessInfo.processInfo.environment
+var text = ObjC.unwrap(env.objectForKey('TEXT')) || ''
+var provider = ObjC.unwrap(env.objectForKey('PROVIDER')) || ''
+var voice = ObjC.unwrap(env.objectForKey('VOICE')) || ''
+
+var userInfo = $.NSMutableDictionary.alloc.init
+userInfo.setObject_forKey($(text), $('text'))
+if (provider.length > 0) {
+  userInfo.setObject_forKey($(provider), $('provider'))
+}
+if (voice.length > 0) {
+  userInfo.setObject_forKey($(voice), $('voice'))
+}
+
+$.NSDistributedNotificationCenter.defaultCenter
+  .postNotificationName_object_userInfo_options(
+    $('OpenWhisper.TTS.Request'),
+    null,
+    userInfo,
+    0
+  )
+JXA

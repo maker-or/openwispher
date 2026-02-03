@@ -1,0 +1,528 @@
+{
+  "source": "/Users/harshithpasupuleti/code/dhavnii/dhavnii/SettingsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Permissions",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 23
+        }
+      },
+      {
+        "comment": "",
+        "key": "General",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "History",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 35
+        }
+      },
+      {
+        "comment": "",
+        "key": "About",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 39
+        }
+      },
+      {
+        "comment": "",
+        "key": "Permissions",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 65
+        }
+      },
+      {
+        "comment": "",
+        "key": "OpenWispher requires these permissions to function properly.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 69
+        }
+      },
+      {
+        "comment": "",
+        "key": "Not seeing the correct status?",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 115
+        }
+      },
+      {
+        "comment": "",
+        "key": "Refresh",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 124
+        }
+      },
+      {
+        "comment": "",
+        "key": "All permissions granted",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 138
+        }
+      },
+      {
+        "comment": "",
+        "key": "Some permissions missing",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 150
+        }
+      },
+      {
+        "comment": "",
+        "key": "Grant all permissions for full functionality",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 154
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset Application",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 526
+        }
+      },
+      {
+        "comment": "",
+        "key": "General",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 300
+        }
+      },
+      {
+        "comment": "",
+        "key": "Configure app behavior and preferences.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 304
+        }
+      },
+      {
+        "comment": "",
+        "key": "Startup",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 314
+        }
+      },
+      {
+        "comment": "",
+        "key": "Launch at Login",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 319
+        }
+      },
+      {
+        "comment": "",
+        "key": "Automatically start OpenWispher when you log in",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 321
+        }
+      },
+      {
+        "comment": "",
+        "key": "Hotkey",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 337
+        }
+      },
+      {
+        "comment": "",
+        "key": "Global Hotkey",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 342
+        }
+      },
+      {
+        "comment": "",
+        "key": "Press to start/stop recording",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 344
+        }
+      },
+      {
+        "comment": "",
+        "key": "⌥",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 352
+        }
+      },
+      {
+        "comment": "",
+        "key": "+",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 354
+        }
+      },
+      {
+        "comment": "",
+        "key": "Space",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 357
+        }
+      },
+      {
+        "comment": "",
+        "key": "Transcription Provider",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 370
+        }
+      },
+      {
+        "comment": "",
+        "key": "Provider",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 373
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ API Key",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 392
+        }
+      },
+      {
+        "comment": "",
+        "key": "Hide API key",
+        "location": {
+          "startingColumn": 48,
+          "startingLine": 414
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show API key",
+        "location": {
+          "startingColumn": 65,
+          "startingLine": 414
+        }
+      },
+      {
+        "comment": "",
+        "key": "Enter API key",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 398
+        }
+      },
+      {
+        "comment": "",
+        "key": "Enter API key",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 400
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text-to-Speech Provider",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 425
+        }
+      },
+      {
+        "comment": "",
+        "key": "Provider",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 428
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ API Key",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 442
+        }
+      },
+      {
+        "comment": "",
+        "key": "Hide API key",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 464
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show API key",
+        "location": {
+          "startingColumn": 68,
+          "startingLine": 464
+        }
+      },
+      {
+        "comment": "",
+        "key": "Enter API key",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 448
+        }
+      },
+      {
+        "comment": "",
+        "key": "Enter API key",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 450
+        }
+      },
+      {
+        "comment": "",
+        "key": "Status",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 475
+        }
+      },
+      {
+        "comment": "",
+        "key": "Last: %@",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 489
+        }
+      },
+      {
+        "comment": "",
+        "key": "Advanced",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 502
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset App",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 513
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 527
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reset",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 528
+        }
+      },
+      {
+        "comment": "",
+        "key": "This will clear all preferences and require you to complete onboarding again. Permissions will need to be re-granted.",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 533
+        }
+      },
+      {
+        "comment": "",
+        "key": "OpenWispher",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 724
+        }
+      },
+      {
+        "comment": "",
+        "key": "Version 1.0.0",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 728
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speech-to-Text, Instantly",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 732
+        }
+      },
+      {
+        "comment": "",
+        "key": "GitHub",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 755
+        }
+      },
+      {
+        "comment": "",
+        "key": "Support",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 762
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear All History?",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 879
+        }
+      },
+      {
+        "comment": "",
+        "key": "History",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 791
+        }
+      },
+      {
+        "comment": "",
+        "key": "Manage transcription history retention and storage.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 795
+        }
+      },
+      {
+        "comment": "",
+        "key": "Retention Period",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 805
+        }
+      },
+      {
+        "comment": "",
+        "key": "Keep transcriptions for",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 809
+        }
+      },
+      {
+        "comment": "",
+        "key": "Transcriptions older than this period will be automatically deleted (except favorites).",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 822
+        }
+      },
+      {
+        "comment": "",
+        "key": "Retention Days",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 812
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld days",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 814
+        }
+      },
+      {
+        "comment": "",
+        "key": "Statistics",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 832
+        }
+      },
+      {
+        "comment": "",
+        "key": "Total Transcriptions",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 837
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 839
+        }
+      },
+      {
+        "comment": "",
+        "key": "Data Management",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 858
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear All History",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 866
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 880
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear All",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 881
+        }
+      },
+      {
+        "comment": "",
+        "key": "This will permanently delete all transcriptions from history. Favorites will also be deleted.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 885
+        }
+      }
+    ]
+  },
+  "version": 1
+}

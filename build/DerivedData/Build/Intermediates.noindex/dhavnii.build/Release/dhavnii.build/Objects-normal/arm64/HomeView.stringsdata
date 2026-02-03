@@ -1,0 +1,272 @@
+{
+  "source": "/Users/harshithpasupuleti/code/dhavnii/dhavnii/HomeView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "OPENWISPHER",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 53
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text-to-Speech unavailable",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 70
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 105
+        }
+      },
+      {
+        "comment": "",
+        "key": "No transcriptions yet",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 211
+        }
+      },
+      {
+        "comment": "",
+        "key": "Copy transcription",
+        "location": {
+          "startingColumn": 53,
+          "startingLine": 238
+        }
+      },
+      {
+        "comment": "",
+        "key": "Copy",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 239
+        }
+      },
+      {
+        "comment": "",
+        "key": "Delete transcription",
+        "location": {
+          "startingColumn": 53,
+          "startingLine": 250
+        }
+      },
+      {
+        "comment": "",
+        "key": "Delete",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 251
+        }
+      },
+      {
+        "comment": "",
+        "key": "Permissions",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 345
+        }
+      },
+      {
+        "comment": "",
+        "key": "Microphone",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 353
+        }
+      },
+      {
+        "comment": "",
+        "key": "Request",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 361
+        }
+      },
+      {
+        "comment": "",
+        "key": "Accessibility",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 378
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open Settings",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 386
+        }
+      },
+      {
+        "comment": "",
+        "key": "Transcription Provider",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 405
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ API Key",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 446
+        }
+      },
+      {
+        "comment": "",
+        "key": "Hide API key",
+        "location": {
+          "startingColumn": 48,
+          "startingLine": 480
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show API key",
+        "location": {
+          "startingColumn": 65,
+          "startingLine": 480
+        }
+      },
+      {
+        "comment": "",
+        "key": "Hide API key",
+        "location": {
+          "startingColumn": 62,
+          "startingLine": 481
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show API key",
+        "location": {
+          "startingColumn": 79,
+          "startingLine": 481
+        }
+      },
+      {
+        "comment": "",
+        "key": "Enter API Key",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 453
+        }
+      },
+      {
+        "comment": "",
+        "key": "Enter API Key",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 455
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text-to-Speech Provider",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 489
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ API Key",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 529
+        }
+      },
+      {
+        "comment": "",
+        "key": "Hide API key",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 563
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show API key",
+        "location": {
+          "startingColumn": 68,
+          "startingLine": 563
+        }
+      },
+      {
+        "comment": "",
+        "key": "Hide API key",
+        "location": {
+          "startingColumn": 65,
+          "startingLine": 564
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show API key",
+        "location": {
+          "startingColumn": 82,
+          "startingLine": 564
+        }
+      },
+      {
+        "comment": "",
+        "key": "Enter API Key",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 536
+        }
+      },
+      {
+        "comment": "",
+        "key": "Enter API Key",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 538
+        }
+      },
+      {
+        "comment": "",
+        "key": "General",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 572
+        }
+      },
+      {
+        "comment": "",
+        "key": "Data",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 592
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear All History",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 601
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 744
+        }
+      }
+    ]
+  },
+  "version": 1
+}
