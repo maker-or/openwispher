@@ -1,14 +1,13 @@
-# Xcode
-#
-# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
-
-## Build generated
+# Xcode build outputs
 build/
 DerivedData/
-build/DerivedData/Build/Intermediates.noindex/
 dist/
 
-## Various settings
+# User-specific Xcode files
+xcuserdata/
+*.xcuserstate
+
+# Xcode project user settings
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -17,49 +16,35 @@ dist/
 !default.mode2v3
 *.perspectivev3
 !default.perspectivev3
-xcuserdata/
 
-## Other
+# Other generated files
 *.moved-aside
 *.xccheckout
 *.xcscmblueprint
-
-## Obj-C/Swift specific
 *.hmap
 *.ipa
 *.dSYM.zip
 *.dSYM
-
-## Playgrounds
 timeline.xctimeline
 playground.xcworkspace
 
 # Swift Package Manager
-#
 .build/
 .swiftpm/
 
-# CocoaPods
-#
+# CocoaPods / Carthage / Accio
 Pods/
-
-# Carthage
-#
 Carthage/Build/
-
-# Accio dependency management
 Dependencies/
 .accio/
 
 # fastlane
-#
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
 # Code Injection
-#
 iOSInjectionProject/
 
 # macOS
