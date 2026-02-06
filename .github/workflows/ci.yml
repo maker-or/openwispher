@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build-macos:
-    name: Build macOS
+    name: build-macos
     runs-on: macos-latest
 
     steps:

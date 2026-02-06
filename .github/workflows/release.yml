@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   release:
-    name: Build and publish DMG
+    name: build-and-release
     runs-on: macos-latest
     environment: production
 
@@ -33,8 +33,8 @@ jobs:
             VERSION="${{ github.event.inputs.version }}"
             TAG="v${VERSION}"
           else
-            VERSION="dev-${{ github.run_id }}"
-            TAG="dev-${{ github.run_id }}"
+            VERSION="manual-${{ github.run_number }}"
+            TAG="manual-${{ github.run_number }}"
           fi
 
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
@@ -53,24 +53,18 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Locate built app
-        id: app
-        run: |
-          APP_PATH=$(find "build/DerivedData/Build/Products/Release" -maxdepth 1 -name "*.app" -type d | head -n 1)
-          if [[ -z "$APP_PATH" ]]; then
-            echo "Error: No .app found in build output" >&2
-            exit 1
-          fi
-
-          echo "app_path=$APP_PATH" >> "$GITHUB_OUTPUT"
-          echo "app_name=$(basename "$APP_PATH")" >> "$GITHUB_OUTPUT"
-
-      - name: Create DMG packages
+      - name: Create DMG and metadata
         id: pkg
         run: |
           VERSION="${{ steps.version.outputs.version }}"
+          APP_PATH=$(find "build/DerivedData/Build/Products/Release" -maxdepth 1 -name "*.app" -type d | head -n 1)
+          if [[ -z "$APP_PATH" ]]; then
+            echo "No .app found in build output" >&2
+            exit 1
+          fi
+
           mkdir -p dist/stage
-          cp -R "${{ steps.app.outputs.app_path }}" "dist/stage/"
+          cp -R "$APP_PATH" dist/stage/
 
           VERSIONED_DMG="Dhavnii-${VERSION}.dmg"
           LATEST_DMG="Dhavnii-latest.dmg"
@@ -87,7 +81,7 @@ jobs:
           SHA256=$(shasum -a 256 "dist/${VERSIONED_DMG}" | awk '{print $1}')
           echo "${SHA256}  ${VERSIONED_DMG}" > "dist/${VERSIONED_DMG}.sha256"
 
-          cat > "dist/latest.json" <<JSON
+          cat > dist/latest.json <<JSON
           {
             "version": "${VERSION}",
             "dmg_url": "https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/${LATEST_DMG}",
@@ -97,7 +91,7 @@ jobs:
           }
           JSON
 
-      - name: Create GitHub release
+      - name: Publish release assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}

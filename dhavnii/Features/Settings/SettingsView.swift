@@ -943,6 +943,9 @@ private struct HistorySettingsView: View {
 // MARK: - About Settings
 
 private struct AboutSettingsView: View {
+    @State private var updateManager = UpdateManager()
+    @State private var hasAutoCheckedUpdates = false
+
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
@@ -964,7 +967,7 @@ private struct AboutSettingsView: View {
                         .font(.title2)
                         .fontWeight(.semibold)
 
-                    Text("Version 1.0.0")
+                    Text("Version \(updateManager.currentVersion)")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -972,6 +975,62 @@ private struct AboutSettingsView: View {
 
             Spacer()
                 .frame(height: 40)
+
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Software Updates")
+                            .font(.headline)
+                        Text(updateManager.statusText)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    if updateManager.isChecking {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                }
+
+                HStack(spacing: 10) {
+                    Button("Check for Updates") {
+                        Task {
+                            await updateManager.checkForUpdates()
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(updateManager.isChecking)
+
+                    if updateManager.updateAvailable {
+                        Button("Download Latest DMG") {
+                            updateManager.openDownloadURL()
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+
+                    if updateManager.notesURL != nil {
+                        Button("Release Notes") {
+                            updateManager.openReleaseNotes()
+                        }
+                        .buttonStyle(.link)
+                    }
+                }
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.primary.opacity(0.02))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
+            )
+            .padding(.horizontal, 60)
+
+            Spacer()
+                .frame(height: 24)
 
             // Features
             VStack(spacing: 12) {
@@ -1010,6 +1069,11 @@ private struct AboutSettingsView: View {
         }
         .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial.opacity(0.3))
+        .task {
+            guard !hasAutoCheckedUpdates else { return }
+            hasAutoCheckedUpdates = true
+            await updateManager.checkForUpdates()
+        }
     }
 }
 
