@@ -1,93 +1,125 @@
 {
-  "source": "/Users/harshithpasupuleti/code/dhavnii/dhavnii/OnboardingView.swift",
+  "source": "/Users/harshithpasupuleti/code/dhavnii/dhavnii/Features/Onboarding/OnboardingView.swift",
   "tables": {
     "Localizable": [
       {
         "comment": "",
-        "key": "Enable Accessibility Access",
+        "key": "Welcome. OpenWispher.",
         "location": {
-          "startingColumn": 16,
-          "startingLine": 107
+          "startingColumn": 29,
+          "startingLine": 171
         }
       },
       {
         "comment": "",
-        "key": "Press ⌥ + Space to start recording",
+        "key": "Welcome",
         "location": {
           "startingColumn": 18,
-          "startingLine": 89
+          "startingLine": 154
         }
       },
       {
         "comment": "",
-        "key": "Welcome to OpenWispher",
+        "key": "OpenWispher",
         "location": {
-          "startingColumn": 22,
-          "startingLine": 33
-        }
-      },
-      {
-        "comment": "",
-        "key": "Speech-to-Text, instantly",
-        "location": {
-          "startingColumn": 22,
-          "startingLine": 37
+          "startingColumn": 18,
+          "startingLine": 158
         }
       },
       {
         "comment": "",
         "key": "Get Started",
         "location": {
-          "startingColumn": 60,
-          "startingLine": 79
+          "startingColumn": 24,
+          "startingLine": 208
+        }
+      },
+      {
+        "comment": "",
+        "key": "Get started",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 212
         }
       },
       {
         "comment": "",
         "key": "Continue Anyway",
         "location": {
-          "startingColumn": 76,
-          "startingLine": 79
+          "startingColumn": 24,
+          "startingLine": 214
         }
       },
       {
         "comment": "",
-        "key": "Open System Settings",
+        "key": "Continue anyway",
         "location": {
-          "startingColumn": 20,
-          "startingLine": 108
+          "startingColumn": 37,
+          "startingLine": 218
         }
       },
       {
         "comment": "",
-        "key": "Cancel",
+        "key": "Select the provider",
         "location": {
-          "startingColumn": 20,
-          "startingLine": 112
+          "startingColumn": 18,
+          "startingLine": 234
         }
       },
       {
         "comment": "",
-        "key": "To enable auto-paste:\n\n1. Click 'Open System Settings'\n2. Find 'OpenWispher' in the list\n3. Toggle it ON\n4. Return to this app\n\nThe checkmark will appear automatically when enabled.",
+        "key": "Enter api key",
         "location": {
-          "startingColumn": 17,
-          "startingLine": 115
+          "startingColumn": 18,
+          "startingLine": 294
         }
       },
       {
         "comment": "",
-        "key": "Grant Permission",
+        "key": "",
         "location": {
-          "startingColumn": 30,
-          "startingLine": 169
+          "startingColumn": 33,
+          "startingLine": 300
         }
       },
       {
         "comment": "",
-        "key": "Enable 'OpenWispher' in System Settings",
+        "key": "Follow the link to create api key?",
         "location": {
           "startingColumn": 26,
-          "startingLine": 187
+          "startingLine": 309
+        }
+      },
+      {
+        "comment": "",
+        "key": "Link",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 311
+        }
+      },
+      {
+        "comment": "",
+        "key": "Change provider",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 318
+        }
+      },
+      {
+        "comment": "",
+        "key": "Continue",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 323
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@. %@",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 417
         }
       }
     ]

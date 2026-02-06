@@ -1,0 +1,109 @@
+name: Release DMG
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Manual version (e.g., 1.0.0)"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish DMG
+    runs-on: macos-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${{ github.ref_name#v }}"
+            TAG="${{ github.ref_name }}"
+          elif [[ -n "${{ github.event.inputs.version }}" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+            TAG="v${VERSION}"
+          else
+            VERSION="dev-${{ github.run_id }}"
+            TAG="dev-${{ github.run_id }}"
+          fi
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Build app (unsigned)
+        run: |
+          xcodebuild \
+            -project "dhavnii.xcodeproj" \
+            -scheme "dhavnii" \
+            -configuration Release \
+            -destination "platform=macOS" \
+            -derivedDataPath "build/DerivedData" \
+            clean build \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Locate built app
+        id: app
+        run: |
+          APP_PATH=$(find "build/DerivedData/Build/Products/Release" -maxdepth 1 -name "*.app" -type d | head -n 1)
+          if [[ -z "$APP_PATH" ]]; then
+            echo "Error: No .app found in build output" >&2
+            exit 1
+          fi
+
+          echo "app_path=$APP_PATH" >> "$GITHUB_OUTPUT"
+          echo "app_name=$(basename "$APP_PATH")" >> "$GITHUB_OUTPUT"
+
+      - name: Create DMG packages
+        id: pkg
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p dist/stage
+          cp -R "${{ steps.app.outputs.app_path }}" "dist/stage/"
+
+          VERSIONED_DMG="Dhavnii-${VERSION}.dmg"
+          LATEST_DMG="Dhavnii-latest.dmg"
+
+          hdiutil create \
+            -volname "Dhavnii" \
+            -srcfolder "dist/stage" \
+            -ov \
+            -format UDZO \
+            "dist/${VERSIONED_DMG}"
+
+          cp "dist/${VERSIONED_DMG}" "dist/${LATEST_DMG}"
+
+          SHA256=$(shasum -a 256 "dist/${VERSIONED_DMG}" | awk '{print $1}')
+          echo "${SHA256}  ${VERSIONED_DMG}" > "dist/${VERSIONED_DMG}.sha256"
+
+          cat > "dist/latest.json" <<JSON
+          {
+            "version": "${VERSION}",
+            "dmg_url": "https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/${LATEST_DMG}",
+            "notes_url": "https://github.com/${GITHUB_REPOSITORY}/releases/tag/v${VERSION}",
+            "sha256": "${SHA256}",
+            "published_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          JSON
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Dhavnii v${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: |
+            dist/*.dmg
+            dist/*.sha256
+            dist/latest.json

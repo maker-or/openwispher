@@ -3,8 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIconFile</key>
-	<string>AppIcon</string>
+	<string>openwispherIcon</string>
 	<key>CFBundleIconName</key>
-	<string>AppIcon</string>
+	<string>openwispherIcon</string>
 </dict>
 </plist>

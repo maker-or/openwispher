@@ -1,269 +1,157 @@
 {
-  "source": "/Users/harshithpasupuleti/code/dhavnii/dhavnii/HomeView.swift",
+  "source": "/Users/harshithpasupuleti/code/dhavnii/dhavnii/Features/Home/HomeView.swift",
   "tables": {
     "Localizable": [
       {
         "comment": "",
-        "key": "Openwispher",
+        "key": "OpenWispher",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 43
-        }
-      },
-      {
-        "comment": "",
-        "key": "Home",
-        "location": {
-          "startingColumn": 25,
-          "startingLine": 53
-        }
-      },
-      {
-        "comment": "",
-        "key": "Settings",
-        "location": {
-          "startingColumn": 25,
-          "startingLine": 60
-        }
-      },
-      {
-        "comment": "",
-        "key": "No transcriptions yet",
-        "location": {
-          "startingColumn": 30,
-          "startingLine": 167
-        }
-      },
-      {
-        "comment": "",
-        "key": "Copy transcription",
-        "location": {
-          "startingColumn": 53,
-          "startingLine": 194
-        }
-      },
-      {
-        "comment": "",
-        "key": "Copy",
-        "location": {
-          "startingColumn": 39,
-          "startingLine": 195
-        }
-      },
-      {
-        "comment": "",
-        "key": "Delete transcription",
-        "location": {
-          "startingColumn": 53,
-          "startingLine": 206
-        }
-      },
-      {
-        "comment": "",
-        "key": "Delete",
-        "location": {
-          "startingColumn": 39,
-          "startingLine": 207
-        }
-      },
-      {
-        "comment": "",
-        "key": "Permissions",
-        "location": {
-          "startingColumn": 26,
-          "startingLine": 350
-        }
-      },
-      {
-        "comment": "",
-        "key": "Microphone",
-        "location": {
-          "startingColumn": 34,
-          "startingLine": 358
-        }
-      },
-      {
-        "comment": "",
-        "key": "Request",
-        "location": {
-          "startingColumn": 40,
-          "startingLine": 366
-        }
-      },
-      {
-        "comment": "",
-        "key": "Accessibility",
-        "location": {
-          "startingColumn": 34,
-          "startingLine": 382
+          "startingColumn": 22,
+          "startingLine": 73
         }
       },
       {
         "comment": "",
         "key": "Open Settings",
         "location": {
-          "startingColumn": 40,
-          "startingLine": 390
+          "startingColumn": 27,
+          "startingLine": 130
         }
       },
       {
         "comment": "",
-        "key": "Transcription Provider",
+        "key": "Open Settings",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 404
+          "startingColumn": 41,
+          "startingLine": 131
         }
       },
       {
         "comment": "",
-        "key": "%@ API Key",
-        "location": {
-          "startingColumn": 30,
-          "startingLine": 440
-        }
-      },
-      {
-        "comment": "",
-        "key": "Hide API key",
-        "location": {
-          "startingColumn": 48,
-          "startingLine": 469
-        }
-      },
-      {
-        "comment": "",
-        "key": "Show API key",
-        "location": {
-          "startingColumn": 65,
-          "startingLine": 469
-        }
-      },
-      {
-        "comment": "",
-        "key": "Hide API key",
-        "location": {
-          "startingColumn": 62,
-          "startingLine": 470
-        }
-      },
-      {
-        "comment": "",
-        "key": "Show API key",
-        "location": {
-          "startingColumn": 79,
-          "startingLine": 470
-        }
-      },
-      {
-        "comment": "",
-        "key": "Enter API Key",
-        "location": {
-          "startingColumn": 47,
-          "startingLine": 447
-        }
-      },
-      {
-        "comment": "",
-        "key": "Enter API Key",
-        "location": {
-          "startingColumn": 49,
-          "startingLine": 449
-        }
-      },
-      {
-        "comment": "",
-        "key": "Text-to-Speech Provider",
-        "location": {
-          "startingColumn": 26,
-          "startingLine": 478
-        }
-      },
-      {
-        "comment": "",
-        "key": "%@ API Key",
-        "location": {
-          "startingColumn": 30,
-          "startingLine": 513
-        }
-      },
-      {
-        "comment": "",
-        "key": "Hide API key",
-        "location": {
-          "startingColumn": 51,
-          "startingLine": 542
-        }
-      },
-      {
-        "comment": "",
-        "key": "Show API key",
-        "location": {
-          "startingColumn": 68,
-          "startingLine": 542
-        }
-      },
-      {
-        "comment": "",
-        "key": "Hide API key",
-        "location": {
-          "startingColumn": 65,
-          "startingLine": 543
-        }
-      },
-      {
-        "comment": "",
-        "key": "Show API key",
-        "location": {
-          "startingColumn": 82,
-          "startingLine": 543
-        }
-      },
-      {
-        "comment": "",
-        "key": "Enter API Key",
-        "location": {
-          "startingColumn": 47,
-          "startingLine": 520
-        }
-      },
-      {
-        "comment": "",
-        "key": "Enter API Key",
-        "location": {
-          "startingColumn": 49,
-          "startingLine": 522
-        }
-      },
-      {
-        "comment": "",
-        "key": "General",
-        "location": {
-          "startingColumn": 26,
-          "startingLine": 551
-        }
-      },
-      {
-        "comment": "",
-        "key": "Data",
-        "location": {
-          "startingColumn": 26,
-          "startingLine": 567
-        }
-      },
-      {
-        "comment": "",
-        "key": "Clear All History",
+        "key": "Settings",
         "location": {
           "startingColumn": 34,
-          "startingLine": 576
+          "startingLine": 111
         }
       },
       {
         "comment": "",
-        "key": "",
+        "key": "⌘,",
         "location": {
-          "startingColumn": 20,
-          "startingLine": 714
+          "startingColumn": 34,
+          "startingLine": 117
+        }
+      },
+      {
+        "comment": "",
+        "key": "No transcriptions. Press Option Space to start recording.",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 294
+        }
+      },
+      {
+        "comment": "",
+        "key": "Home",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 236
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Transcriptions Yet",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 276
+        }
+      },
+      {
+        "comment": "",
+        "key": "Press ⌥ Space to start recording",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 281
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your transcriptions will appear here",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 285
+        }
+      },
+      {
+        "comment": "",
+        "key": "Transcription: %@",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 363
+        }
+      },
+      {
+        "comment": "",
+        "key": "Copy to clipboard",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 380
+        }
+      },
+      {
+        "comment": "",
+        "key": "Copied",
+        "location": {
+          "startingColumn": 48,
+          "startingLine": 381
+        }
+      },
+      {
+        "comment": "",
+        "key": "Copy transcription",
+        "location": {
+          "startingColumn": 59,
+          "startingLine": 381
+        }
+      },
+      {
+        "comment": "",
+        "key": "Delete transcription",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 395
+        }
+      },
+      {
+        "comment": "",
+        "key": "Delete transcription",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 396
+        }
+      },
+      {
+        "comment": "",
+        "key": "Copied",
+        "location": {
+          "startingColumn": 41,
+          "startingLine": 373
+        }
+      },
+      {
+        "comment": "",
+        "key": "Copy",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 373
+        }
+      },
+      {
+        "comment": "",
+        "key": "Delete",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 389
         }
       }
     ]

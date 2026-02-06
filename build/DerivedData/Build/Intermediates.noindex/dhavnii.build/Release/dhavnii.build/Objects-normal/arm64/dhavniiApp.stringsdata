@@ -1,21 +1,29 @@
 {
-  "source": "/Users/harshithpasupuleti/code/dhavnii/dhavnii/dhavniiApp.swift",
+  "source": "/Users/harshithpasupuleti/code/dhavnii/dhavnii/App/dhavniiApp.swift",
   "tables": {
     "Localizable": [
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 77
+        }
+      },
       {
         "comment": "",
         "key": "About OpenWispher",
         "location": {
           "startingColumn": 24,
-          "startingLine": 62
+          "startingLine": 56
         }
       },
       {
         "comment": "",
         "key": "Settings...",
         "location": {
-          "startingColumn": 26,
-          "startingLine": 76
+          "startingColumn": 24,
+          "startingLine": 69
         }
       }
     ]
