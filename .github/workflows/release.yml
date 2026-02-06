@@ -33,7 +33,7 @@ jobs:
             VERSION="${{ github.event.inputs.version }}"
             TAG="v${VERSION}"
           else
-            VERSION="manual-${{ github.run_number }}"
+            VERSION="0.0.${{ github.run_number }}"
             TAG="v${VERSION}"
           fi
 

@@ -130,8 +130,7 @@ internal final class UpdateManager {
                 return
             }
 
-            let fileData = try Data(contentsOf: temporaryURL)
-            let computedSHA256 = Self.sha256Hex(for: fileData)
+            let computedSHA256 = try Self.streamedSHA256Hex(for: temporaryURL)
             let expectedSHA256 = manifest.sha256.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
 
             guard computedSHA256 == expectedSHA256 else {
@@ -188,8 +187,21 @@ internal final class UpdateManager {
         }
     }
 
-    private static func sha256Hex(for data: Data) -> String {
-        let digest = SHA256.hash(data: data)
+    private static func streamedSHA256Hex(for fileURL: URL) throws -> String {
+        let handle = try FileHandle(forReadingFrom: fileURL)
+        defer { handle.closeFile() }
+
+        var hasher = SHA256()
+        let chunkSize = 64 * 1024
+
+        while true {
+            guard let data = try handle.read(upToCount: chunkSize), !data.isEmpty else {
+                break
+            }
+            hasher.update(data: data)
+        }
+
+        let digest = hasher.finalize()
         return digest.map { String(format: "%02x", $0) }.joined()
     }
 
