@@ -7,6 +7,8 @@
 
 import Foundation
 import AppKit
+import CryptoKit
+import OSLog
 
 @MainActor
 @Observable
@@ -33,10 +35,13 @@ internal final class UpdateManager {
     internal private(set) var updateAvailable = false
     internal private(set) var downloadURL: URL?
     internal private(set) var notesURL: URL?
+    internal private(set) var expectedSHA256: String?
     internal private(set) var statusText = "Not checked yet"
     internal private(set) var lastCheckedAt: Date?
+    private var latestManifest: ReleaseManifest?
 
     private static let manifestURL = URL(string: "https://github.com/maker-or/dhavnii/releases/latest/download/latest.json")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "dhavnii", category: "UpdateManager")
 
     internal func checkForUpdates() async {
         guard !isChecking else { return }
@@ -44,6 +49,14 @@ internal final class UpdateManager {
             statusText = "Update URL is not configured"
             return
         }
+
+        updateAvailable = false
+        downloadURL = nil
+        notesURL = nil
+        latestVersion = nil
+        expectedSHA256 = nil
+        latestManifest = nil
+        statusText = "Checking for updates..."
 
         isChecking = true
         defer {
@@ -54,27 +67,42 @@ internal final class UpdateManager {
         do {
             let (data, response) = try await URLSession.shared.data(from: manifestURL)
             guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                updateAvailable = false
+                downloadURL = nil
+                notesURL = nil
+                latestVersion = nil
+                expectedSHA256 = nil
+                latestManifest = nil
                 statusText = "Unable to reach update server"
                 return
             }
 
             let manifest = try JSONDecoder().decode(ReleaseManifest.self, from: data)
+            latestManifest = manifest
             latestVersion = manifest.version
             downloadURL = manifest.dmgURL
             notesURL = manifest.notesURL
+            expectedSHA256 = manifest.sha256
 
             let hasUpdate = Self.isVersion(manifest.version, newerThan: currentVersion)
             updateAvailable = hasUpdate
             statusText = hasUpdate ? "Update available: v\(manifest.version)" : "You're up to date (v\(currentVersion))"
         } catch {
+            updateAvailable = false
+            downloadURL = nil
+            notesURL = nil
+            latestVersion = nil
+            expectedSHA256 = nil
+            latestManifest = nil
             statusText = "Update check failed"
-            print("❌ Update check failed: \(error)")
+            Self.logger.error("Update check failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 
     internal func openDownloadURL() {
-        guard let downloadURL else { return }
-        NSWorkspace.shared.open(downloadURL)
+        Task {
+            await downloadAndOpenVerifiedDMG()
+        }
     }
 
     internal func openReleaseNotes() {
@@ -86,9 +114,49 @@ internal final class UpdateManager {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
     }
 
+    private func downloadAndOpenVerifiedDMG() async {
+        guard let manifest = latestManifest, updateAvailable else {
+            statusText = "No update available"
+            return
+        }
+
+        statusText = "Downloading update..."
+
+        do {
+            let (temporaryURL, response) = try await URLSession.shared.download(from: manifest.dmgURL)
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                statusText = "Update download failed"
+                Self.logger.error("Update download failed with non-2xx response")
+                return
+            }
+
+            let fileData = try Data(contentsOf: temporaryURL)
+            let computedSHA256 = Self.sha256Hex(for: fileData)
+            let expectedSHA256 = manifest.sha256.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+
+            guard computedSHA256 == expectedSHA256 else {
+                try? FileManager.default.removeItem(at: temporaryURL)
+                statusText = "Update verification failed"
+                Self.logger.error(
+                    "SHA mismatch. expected=\(expectedSHA256, privacy: .public) actual=\(computedSHA256, privacy: .public)"
+                )
+                return
+            }
+
+            let finalURL = try Self.persistDownloadedDMG(from: temporaryURL, sourceURL: manifest.dmgURL)
+            statusText = "Verified update ready"
+            NSWorkspace.shared.open(finalURL)
+        } catch {
+            statusText = "Update download failed"
+            Self.logger.error("Update download failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
     private static func isVersion(_ lhs: String, newerThan rhs: String) -> Bool {
-        let left = lhs.split(separator: ".").map { Int($0) ?? 0 }
-        let right = rhs.split(separator: ".").map { Int($0) ?? 0 }
+        let normalizedLeft = normalizedVersion(lhs)
+        let normalizedRight = normalizedVersion(rhs)
+        let left = numericSegments(from: normalizedLeft, original: lhs)
+        let right = numericSegments(from: normalizedRight, original: rhs)
         let count = max(left.count, right.count)
 
         for index in 0..<count {
@@ -97,5 +165,43 @@ internal final class UpdateManager {
             if l != r { return l > r }
         }
         return false
+    }
+
+    private static func normalizedVersion(_ version: String) -> String {
+        var value = version.trimmingCharacters(in: .whitespacesAndNewlines)
+        if value.hasPrefix("v") || value.hasPrefix("V") {
+            value.removeFirst()
+        }
+        return value
+    }
+
+    private static func numericSegments(from normalizedVersion: String, original: String) -> [Int] {
+        normalizedVersion.split(separator: ".").map { segment in
+            if let value = Int(segment) {
+                return value
+            }
+
+            logger.warning(
+                "Non-numeric version segment '\(String(segment), privacy: .public)' in '\(original, privacy: .public)'; treating as 0"
+            )
+            return 0
+        }
+    }
+
+    private static func sha256Hex(for data: Data) -> String {
+        let digest = SHA256.hash(data: data)
+        return digest.map { String(format: "%02x", $0) }.joined()
+    }
+
+    private static func persistDownloadedDMG(from temporaryURL: URL, sourceURL: URL) throws -> URL {
+        let filename = sourceURL.lastPathComponent.isEmpty ? "Dhavnii-update.dmg" : sourceURL.lastPathComponent
+        let finalURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+
+        if FileManager.default.fileExists(atPath: finalURL.path) {
+            try FileManager.default.removeItem(at: finalURL)
+        }
+
+        try FileManager.default.moveItem(at: temporaryURL, to: finalURL)
+        return finalURL
     }
 }

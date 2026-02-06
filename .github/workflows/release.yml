@@ -34,7 +34,7 @@ jobs:
             TAG="v${VERSION}"
           else
             VERSION="manual-${{ github.run_number }}"
-            TAG="manual-${{ github.run_number }}"
+            TAG="v${VERSION}"
           fi
 
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
@@ -57,6 +57,7 @@ jobs:
         id: pkg
         run: |
           VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
           APP_PATH=$(find "build/DerivedData/Build/Products/Release" -maxdepth 1 -name "*.app" -type d | head -n 1)
           if [[ -z "$APP_PATH" ]]; then
             echo "No .app found in build output" >&2
@@ -85,7 +86,7 @@ jobs:
           {
             "version": "${VERSION}",
             "dmg_url": "https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/${LATEST_DMG}",
-            "notes_url": "https://github.com/${GITHUB_REPOSITORY}/releases/tag/v${VERSION}",
+            "notes_url": "https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}",
             "sha256": "${SHA256}",
             "published_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
           }
