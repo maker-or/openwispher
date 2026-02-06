@@ -64,8 +64,15 @@ jobs:
             exit 1
           fi
 
+          rm -rf dist/stage
           mkdir -p dist/stage
           cp -R "$APP_PATH" dist/stage/
+          # Standard drag-install UX in Finder
+          ln -sfn /Applications dist/stage/Applications
+          if [[ ! -L "dist/stage/Applications" ]]; then
+            echo "Failed to create Applications link" >&2
+            exit 1
+          fi
 
           VERSIONED_DMG="Dhavnii-${VERSION}.dmg"
           LATEST_DMG="Dhavnii-latest.dmg"
@@ -76,6 +83,7 @@ jobs:
             -ov \
             -format UDZO \
             "dist/${VERSIONED_DMG}"
+          hdiutil verify "dist/${VERSIONED_DMG}"
 
           cp "dist/${VERSIONED_DMG}" "dist/${LATEST_DMG}"
 
