@@ -14,14 +14,14 @@ actor ElevenLabsAPIClient: TranscriptionProvider {
     private let baseURL = "https://api.elevenlabs.io/v1/speech-to-text"
     private let model = "scribe_v1" // ElevenLabs' latest STT model
     
-    private var apiKey: String {
+    nonisolated private var apiKey: String {
         // Prefer user-provided key from Secure Keychain, fall back to env var for dev.
         let stored = SecureStorage.retrieveAPIKey(for: .elevenLabs) ?? ""
         if !stored.isEmpty { return stored }
         return ProcessInfo.processInfo.environment["ELEVENLABS_API_KEY"] ?? ""
     }
 
-    var isConfigured: Bool {
+    nonisolated var isConfigured: Bool {
         !apiKey.isEmpty
     }
     

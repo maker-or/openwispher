@@ -60,7 +60,7 @@ struct OnboardingView: View {
                 }
             }
         }
-        .onChange(of: permissionManager.hasAllPermissions) { hasAllPermissions in
+        .onChange(of: permissionManager.hasAllPermissions) { _, hasAllPermissions in
             guard currentStep == .permissions, hasAllPermissions, !didAutoComplete else { return }
             didAutoComplete = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {

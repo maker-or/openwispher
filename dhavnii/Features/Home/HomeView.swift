@@ -254,22 +254,14 @@ struct HomeContentView: View {
         VStack(spacing: 20) {
             Spacer()
 
-            if #available(macOS 26.0, *) {
-                Image(systemName: "waveform.badge.mic")
-                    .font(.system(size: 60, weight: .thin))
-                    .foregroundStyle(.tertiary)
+            ZStack {
+                Circle()
+                    .fill(.ultraThinMaterial)
                     .frame(width: 100, height: 100)
-                    .glassEffect(.regular.tint(.primary.opacity(0.05)), in: .circle)
-            } else {
-                ZStack {
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                        .frame(width: 100, height: 100)
 
-                    Image(systemName: "waveform.badge.mic")
-                        .font(.system(size: 40, weight: .thin))
-                        .foregroundStyle(.tertiary)
-                }
+                Image(systemName: "waveform.badge.mic")
+                    .font(.system(size: 40, weight: .thin))
+                    .foregroundStyle(.tertiary)
             }
 
             VStack(spacing: 8) {

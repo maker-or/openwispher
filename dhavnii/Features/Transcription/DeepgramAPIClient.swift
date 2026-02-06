@@ -14,14 +14,14 @@ actor DeepgramAPIClient: TranscriptionProvider {
     private let baseURL = "https://api.deepgram.com/v1/listen"
     private let model = "nova-2" // Deepgram's latest Nova 2 model
     
-    private var apiKey: String {
+    nonisolated private var apiKey: String {
         // Prefer user-provided key from Secure Keychain, fall back to env var for dev.
         let stored = SecureStorage.retrieveAPIKey(for: .deepgram) ?? ""
         if !stored.isEmpty { return stored }
         return ProcessInfo.processInfo.environment["DEEPGRAM_API_KEY"] ?? ""
     }
 
-    var isConfigured: Bool {
+    nonisolated var isConfigured: Bool {
         !apiKey.isEmpty
     }
     
