@@ -14,14 +14,14 @@ actor GroqAPIClient: TranscriptionProvider {
     private let baseURL = "https://api.groq.com/openai/v1/audio/transcriptions"
     private let model = "whisper-large-v3"
     
-    private var apiKey: String {
+    nonisolated private var apiKey: String {
         // Prefer user-provided key from Secure Keychain, fall back to env var for dev.
         let stored = SecureStorage.retrieveAPIKey(for: .groq) ?? ""
         if !stored.isEmpty { return stored }
         return ProcessInfo.processInfo.environment["GROQ_API_KEY"] ?? ""
     }
 
-    var isConfigured: Bool {
+    nonisolated var isConfigured: Bool {
         !apiKey.isEmpty
     }
     

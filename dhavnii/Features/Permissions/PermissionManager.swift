@@ -66,7 +66,9 @@ internal class PermissionManager {
             queue: .main
         ) { [weak self] _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                self?.checkPermissions()
+                Task { @MainActor [weak self] in
+                    self?.checkPermissions()
+                }
             }
         }
 
@@ -84,7 +86,9 @@ internal class PermissionManager {
             {
                 // Our app was activated - check permissions
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    self.checkPermissions()
+                    Task { @MainActor in
+                        self.checkPermissions()
+                    }
                 }
             }
         }
@@ -100,7 +104,9 @@ internal class PermissionManager {
         permissionCheckTimer?.invalidate()
         permissionCheckTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) {
             [weak self] _ in
-            self?.checkPermissions()
+            Task { @MainActor [weak self] in
+                self?.checkPermissions()
+            }
         }
     }
 
@@ -112,17 +118,21 @@ internal class PermissionManager {
         permissionCheckTimer?.invalidate()
         permissionCheckTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) {
             [weak self] _ in
-            self?.checkPermissions()
+            Task { @MainActor [weak self] in
+                self?.checkPermissions()
 
-            // Stop aggressive monitoring after permissions are granted
-            if self?.hasAllPermissions == true {
-                self?.stopAggressiveMonitoring()
+                // Stop aggressive monitoring after permissions are granted
+                if self?.hasAllPermissions == true {
+                    self?.stopAggressiveMonitoring()
+                }
             }
         }
 
         // Auto-stop after 90 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 90) { [weak self] in
-            self?.stopAggressiveMonitoring()
+            Task { @MainActor [weak self] in
+                self?.stopAggressiveMonitoring()
+            }
         }
     }
 
@@ -399,7 +409,9 @@ internal class PermissionManager {
 
         // Strategy 2: Open System Settings (always works)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            self.openAccessibilitySettings()
+            Task { @MainActor in
+                self.openAccessibilitySettings()
+            }
         }
 
         // Start aggressive monitoring to detect when permission is granted

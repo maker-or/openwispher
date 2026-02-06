@@ -340,21 +340,13 @@ private struct PermissionsCard<Content: View>: View {
     }
 
     var body: some View {
-        if #available(macOS 26.0, *) {
-            GlassEffectContainer(spacing: 0) {
-                content
-                    .frame(maxWidth: .infinity)
-                    .glassEffect(.regular.tint(.primary.opacity(0.05)), in: .rect(cornerRadius: 22))
-            }
-        } else {
-            content
-                .frame(maxWidth: .infinity)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 22)
-                        .stroke(.primary.opacity(0.08), lineWidth: 0.5)
-                )
-        }
+        content
+            .frame(maxWidth: .infinity)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22))
+            .overlay(
+                RoundedRectangle(cornerRadius: 22)
+                    .stroke(.primary.opacity(0.08), lineWidth: 0.5)
+            )
     }
 }
 
@@ -366,21 +358,13 @@ private struct OnboardingPanel<Content: View>: View {
     }
 
     var body: some View {
-        if #available(macOS 26.0, *) {
-            GlassEffectContainer(spacing: 0) {
-                content
-                    .frame(maxWidth: .infinity)
-                    .glassEffect(.regular.tint(.primary.opacity(0.05)), in: .rect(cornerRadius: 22))
-            }
-        } else {
-            content
-                .frame(maxWidth: .infinity)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 22)
-                        .stroke(.primary.opacity(0.08), lineWidth: 0.5)
-                )
-        }
+        content
+            .frame(maxWidth: .infinity)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22))
+            .overlay(
+                RoundedRectangle(cornerRadius: 22)
+                    .stroke(.primary.opacity(0.08), lineWidth: 0.5)
+            )
     }
 }
 

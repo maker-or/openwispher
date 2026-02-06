@@ -27,8 +27,8 @@ jobs:
         id: version
         run: |
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION="${{ github.ref_name#v }}"
             TAG="${{ github.ref_name }}"
+            VERSION="${TAG#v}"
           elif [[ -n "${{ github.event.inputs.version }}" ]]; then
             VERSION="${{ github.event.inputs.version }}"
             TAG="v${VERSION}"

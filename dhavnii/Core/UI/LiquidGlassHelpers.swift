@@ -16,46 +16,30 @@ internal extension View {
         fallbackFill: Color = Color.white.opacity(0.3),
         strokeColor: Color = Color.black.opacity(0.12)
     ) -> some View {
-        if #available(macOS 26.0, *) {
-            let glass: Glass = {
-                var value = Glass.regular
-                if let tint {
-                    value = value.tint(tint)
-                }
-                if interactive {
-                    value = value.interactive()
-                }
-                return value
-            }()
-            self
-                .glassEffect(glass, in: .rect(cornerRadius: cornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .stroke(strokeColor, lineWidth: 1)
-                )
-        } else {
-            self
-                .background(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(fallbackFill)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .stroke(strokeColor, lineWidth: 1)
-                )
-        }
+        let fillColor = tint ?? fallbackFill
+        let opacity: Double = interactive ? 0.5 : 0.35
+
+        self
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .fill(fillColor.opacity(opacity))
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(strokeColor, lineWidth: 1)
+            )
     }
 
     @ViewBuilder
     func liquidGlassButtonStyle(prominent: Bool = false) -> some View {
-        if #available(macOS 26.0, *) {
-            if prominent {
-                self.buttonStyle(.glassProminent)
-            } else {
-                self.buttonStyle(.glass)
-            }
+        if prominent {
+            self.buttonStyle(.borderedProminent)
         } else {
-            self
+            self.buttonStyle(.bordered)
         }
     }
 
@@ -79,13 +63,7 @@ internal extension View {
 internal struct LiquidGlassBackground: View {
     var body: some View {
         Group {
-            if #available(macOS 26.0, *) {
-                Rectangle()
-                    .fill(Color.clear)
-                    .glassEffect(.regular, in: .rect(cornerRadius: 0))
-            } else {
-                VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow, state: .active)
-            }
+            VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow, state: .active)
         }
         .ignoresSafeArea()
     }
