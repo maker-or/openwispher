@@ -44,7 +44,7 @@ jobs:
         run: |
           xcodebuild \
             -project "dhavnii.xcodeproj" \
-            -scheme "dhavnii" \
+            -scheme "openwispher" \
             -configuration Release \
             -destination "platform=macOS" \
             -derivedDataPath "build/DerivedData" \
