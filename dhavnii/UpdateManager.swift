@@ -1,6 +1,6 @@
 //
 //  UpdateManager.swift
-//  openwispher
+//  dhavnii
 //
 //  Lightweight updater for unsigned web distribution.
 //

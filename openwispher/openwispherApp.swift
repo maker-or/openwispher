@@ -1,6 +1,6 @@
 //
 //  openwispherApp.swift
-//  OpenWispher
+//  openwispher
 //
 //  Main application entry point with Settings window and menu bar.
 //

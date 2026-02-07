@@ -16,6 +16,11 @@
 			path = openwispher;
 			sourceTree = "<group>";
 		};
+		B329B7AD2F0E4D42000DC9ED /* dhavnii */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = dhavnii;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +38,7 @@
 			isa = PBXGroup;
 			children = (
 				B329B7AC2F0E4D42000DC9ED /* openwispher */,
+				B329B7AD2F0E4D42000DC9ED /* dhavnii */,
 				B329B7AB2F0E4D42000DC9ED /* Products */,
 			);
 			sourceTree = "<group>";
@@ -62,6 +68,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				B329B7AC2F0E4D42000DC9ED /* openwispher */,
+				B329B7AD2F0E4D42000DC9ED /* dhavnii */,
 			);
 			name = openwispher;
 			packageProductDependencies = (
@@ -250,7 +257,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CFBundleShortVersionString = 1.0;
-				CODE_SIGN_ENTITLEMENTS = openwispher/openwispher.entitlements;
+				CODE_SIGN_ENTITLEMENTS = dhavnii/dhavnii.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -267,7 +274,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = sphereai.in.openwispher;
+				PRODUCT_BUNDLE_IDENTIFIER = in.sphereai.openwispher;
 				PRODUCT_NAME = "Openwispher";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -286,7 +293,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CFBundleShortVersionString = 1.0;
-				CODE_SIGN_ENTITLEMENTS = openwispher/openwispher.entitlements;
+				CODE_SIGN_ENTITLEMENTS = dhavnii/dhavnii.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -303,7 +310,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = sphereai.in.openwispher;
+				PRODUCT_BUNDLE_IDENTIFIER = in.sphereai.openwispher;
 				PRODUCT_NAME = "Openwispher";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;

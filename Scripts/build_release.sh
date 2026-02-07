@@ -7,7 +7,7 @@ set -e  # Exit on error
 
 PROJECT_NAME="openwispher"
 RELEASE_APP_NAME="OpenWispher"
-APP_BUNDLE_ID="sphereai.in.openwispher"
+APP_BUNDLE_ID="in.sphereai.openwispher"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="$PROJECT_DIR/build"
 SCHEME="openwispher"

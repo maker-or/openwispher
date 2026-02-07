@@ -3,7 +3,7 @@
 # Reset Permissions Script for openwispher Development
 # This script resets all app permissions and preferences for clean testing
 
-APP_BUNDLE_ID="sphereai.in.openwispher"
+APP_BUNDLE_ID="in.sphereai.openwispher"
 
 echo "🧹 Resetting openwispher permissions and preferences..."
 echo ""
