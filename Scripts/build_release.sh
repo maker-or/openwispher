@@ -1,18 +1,19 @@
 #!/bin/bash
 
-# Dhavnii Release Build Script
+# openwispher Release Build Script
 # Builds a Release version and installs it to Applications folder
 
 set -e  # Exit on error
 
-PROJECT_NAME="dhavnii"
+PROJECT_NAME="openwispher"
+PROJECT_FILE="dhavnii.xcodeproj"
 RELEASE_APP_NAME="OpenWispher"
-APP_BUNDLE_ID="sphereai.in.dhavnii"
+APP_BUNDLE_ID="in.sphereai.openwispher"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="$PROJECT_DIR/build"
-SCHEME="dhavnii"
+SCHEME="openwispher"
 
-echo "🚀 Building Dhavnii Release Version..."
+echo "🚀 Building openwispher Release Version..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
@@ -25,7 +26,7 @@ mkdir -p "$BUILD_DIR"
 echo "🔨 Building Release configuration..."
 cd "$PROJECT_DIR"
 
-xcodebuild -project "$PROJECT_NAME.xcodeproj" \
+xcodebuild -project "$PROJECT_FILE" \
     -scheme "$SCHEME" \
     -configuration Release \
     -derivedDataPath "$BUILD_DIR/DerivedData" \

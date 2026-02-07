@@ -7,11 +7,16 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		B329B7AA2F0E4D42000DC9ED /* dhavnii.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dhavnii.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B329B7AA2F0E4D42000DC9ED /* Openwispher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Openwispher.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B329B7AC2F0E4D42000DC9ED /* dhavnii */ = {
+		B329B7AC2F0E4D42000DC9ED /* openwispher */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = openwispher;
+			sourceTree = "<group>";
+		};
+		B329B7AD2F0E4D42000DC9ED /* dhavnii */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = dhavnii;
 			sourceTree = "<group>";
@@ -32,7 +37,8 @@
 		B329B7A12F0E4D42000DC9ED = {
 			isa = PBXGroup;
 			children = (
-				B329B7AC2F0E4D42000DC9ED /* dhavnii */,
+				B329B7AC2F0E4D42000DC9ED /* openwispher */,
+				B329B7AD2F0E4D42000DC9ED /* dhavnii */,
 				B329B7AB2F0E4D42000DC9ED /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +46,7 @@
 		B329B7AB2F0E4D42000DC9ED /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B329B7AA2F0E4D42000DC9ED /* dhavnii.app */,
+				B329B7AA2F0E4D42000DC9ED /* Openwispher.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +54,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B329B7A92F0E4D42000DC9ED /* dhavnii */ = {
+		B329B7A92F0E4D42000DC9ED /* openwispher */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B329B7B52F0E4D43000DC9ED /* Build configuration list for PBXNativeTarget "dhavnii" */;
+			buildConfigurationList = B329B7B52F0E4D43000DC9ED /* Build configuration list for PBXNativeTarget "openwispher" */;
 			buildPhases = (
 				B329B7A62F0E4D42000DC9ED /* Sources */,
 				B329B7A72F0E4D42000DC9ED /* Frameworks */,
@@ -61,13 +67,14 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				B329B7AC2F0E4D42000DC9ED /* dhavnii */,
+				B329B7AC2F0E4D42000DC9ED /* openwispher */,
+				B329B7AD2F0E4D42000DC9ED /* dhavnii */,
 			);
-			name = dhavnii;
+			name = openwispher;
 			packageProductDependencies = (
 			);
-			productName = dhavnii;
-			productReference = B329B7AA2F0E4D42000DC9ED /* dhavnii.app */;
+			productName = openwispher;
+			productReference = B329B7AA2F0E4D42000DC9ED /* Openwispher.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +92,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B329B7A52F0E4D42000DC9ED /* Build configuration list for PBXProject "dhavnii" */;
+			buildConfigurationList = B329B7A52F0E4D42000DC9ED /* Build configuration list for PBXProject "openwispher" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +106,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B329B7A92F0E4D42000DC9ED /* dhavnii */,
+				B329B7A92F0E4D42000DC9ED /* openwispher */,
 			);
 		};
 /* End PBXProject section */
@@ -246,7 +253,7 @@
 		B329B7B62F0E4D43000DC9ED /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = openwispherIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CFBundleShortVersionString = 1.0;
@@ -259,15 +266,16 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Openwispher";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Dhavnii needs access to your microphone to record speech for transcription.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Openwispher needs access to your microphone to record speech for transcription.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = sphereai.in.dhavnii;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = in.sphereai.openwispher;
+				PRODUCT_NAME = "Openwispher";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -281,7 +289,7 @@
 		B329B7B72F0E4D43000DC9ED /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = openwispherIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CFBundleShortVersionString = 1.0;
@@ -294,15 +302,16 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Openwispher";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Dhavnii needs access to your microphone to record speech for transcription.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Openwispher needs access to your microphone to record speech for transcription.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = sphereai.in.dhavnii;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = in.sphereai.openwispher;
+				PRODUCT_NAME = "Openwispher";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -316,7 +325,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B329B7A52F0E4D42000DC9ED /* Build configuration list for PBXProject "dhavnii" */ = {
+		B329B7A52F0E4D42000DC9ED /* Build configuration list for PBXProject "openwispher" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B329B7B32F0E4D43000DC9ED /* Debug */,
@@ -325,7 +334,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B329B7B52F0E4D43000DC9ED /* Build configuration list for PBXNativeTarget "dhavnii" */ = {
+		B329B7B52F0E4D43000DC9ED /* Build configuration list for PBXNativeTarget "openwispher" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B329B7B62F0E4D43000DC9ED /* Debug */,

@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Restart App Script for Dhavnii
+# Restart App Script for openwispher
 # This script restarts the application after accessibility permission is granted
 # Usage: ./restart_app.sh [app_bundle_path]
 
-APP_BUNDLE_PATH="${1:-/Applications/dhavnii.app}"
+APP_BUNDLE_PATH="${1:-/Applications/openwispher.app}"
 
-echo "🔄 Restarting Dhavnii..."
+echo "🔄 Restarting openwispher..."
 echo "   App path: $APP_BUNDLE_PATH"
 
 # Check if app exists

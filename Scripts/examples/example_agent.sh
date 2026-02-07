@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 
-openwhisper-speak "Hello from Bash AI agent"
+openwispher-speak "Hello from Bash AI agent"

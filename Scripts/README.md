@@ -1,6 +1,6 @@
 # Development Scripts
 
-This directory contains helper scripts for developing, building, and deploying Dhavnii.
+This directory contains helper scripts for developing, building, and deploying Openwispher.
 
 ---
 
@@ -33,7 +33,7 @@ Resets all app permissions and preferences for clean testing during development.
 
 ### `build_release.sh`
 
-Builds a Release version of Dhavnii and installs it to `/Applications/`.
+Builds a Release version of Openwispher and installs it to `/Applications/`.
 
 **What it does:**
 - ✅ Cleans previous builds
@@ -48,7 +48,7 @@ Builds a Release version of Dhavnii and installs it to `/Applications/`.
 ./Scripts/build_release.sh
 ```
 
-**Result:** You'll have a production-ready app in `/Applications/dhavnii.app` that you can:
+**Result:** You'll have a production-ready app in `/Applications/openwispher.app` that you can:
 - Pin to your Dock
 - Launch without Xcode
 - Use like any other Mac app

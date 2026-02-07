@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Reset Permissions Script for Dhavnii Development
+# Reset Permissions Script for openwispher Development
 # This script resets all app permissions and preferences for clean testing
 
-APP_BUNDLE_ID="sphereai.in.dhavnii"
+APP_BUNDLE_ID="in.sphereai.openwispher"
 
-echo "🧹 Resetting Dhavnii permissions and preferences..."
+echo "🧹 Resetting openwispher permissions and preferences..."
 echo ""
 
 # Reset app preferences
@@ -45,5 +45,5 @@ echo "✨ Reset complete! The app will now show onboarding on next launch."
 echo ""
 echo "📝 Note: If accessibility permission doesn't prompt, you may need to:"
 echo "   1. Open System Settings > Privacy & Security > Accessibility"
-echo "   2. Manually remove 'dhavnii' from the list"
+echo "   2. Manually remove 'openwispher' from the list"
 echo "   3. Relaunch the app"
