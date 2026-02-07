@@ -6,6 +6,7 @@
 set -e  # Exit on error
 
 PROJECT_NAME="openwispher"
+PROJECT_FILE="dhavnii.xcodeproj"
 RELEASE_APP_NAME="OpenWispher"
 APP_BUNDLE_ID="in.sphereai.openwispher"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -25,7 +26,7 @@ mkdir -p "$BUILD_DIR"
 echo "🔨 Building Release configuration..."
 cd "$PROJECT_DIR"
 
-xcodebuild -project "$PROJECT_NAME.xcodeproj" \
+xcodebuild -project "$PROJECT_FILE" \
     -scheme "$SCHEME" \
     -configuration Release \
     -derivedDataPath "$BUILD_DIR/DerivedData" \
