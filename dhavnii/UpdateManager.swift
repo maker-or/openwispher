@@ -1,13 +1,13 @@
 //
 //  UpdateManager.swift
-//  dhavnii
+//  openwispher
 //
 //  Lightweight updater for unsigned web distribution.
 //
 
-import Foundation
 import AppKit
 import CryptoKit
+import Foundation
 import OSLog
 
 @MainActor
@@ -40,8 +40,10 @@ internal final class UpdateManager {
     internal private(set) var lastCheckedAt: Date?
     private var latestManifest: ReleaseManifest?
 
-    private static let manifestURL = URL(string: "https://github.com/maker-or/dhavnii/releases/latest/download/latest.json")
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "dhavnii", category: "UpdateManager")
+    private static let manifestURL = URL(
+        string: "https://github.com/maker-or/openwispher/releases/latest/download/latest.json")
+    private static let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "openwispher", category: "UpdateManager")
 
     internal func checkForUpdates() async {
         guard !isChecking else { return }
@@ -66,7 +68,9 @@ internal final class UpdateManager {
 
         do {
             let (data, response) = try await URLSession.shared.data(from: manifestURL)
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            guard let httpResponse = response as? HTTPURLResponse,
+                (200...299).contains(httpResponse.statusCode)
+            else {
                 updateAvailable = false
                 downloadURL = nil
                 notesURL = nil
@@ -86,7 +90,10 @@ internal final class UpdateManager {
 
             let hasUpdate = Self.isVersion(manifest.version, newerThan: currentVersion)
             updateAvailable = hasUpdate
-            statusText = hasUpdate ? "Update available: v\(manifest.version)" : "You're up to date (v\(currentVersion))"
+            statusText =
+                hasUpdate
+                ? "Update available: v\(manifest.version)"
+                : "You're up to date (v\(currentVersion))"
         } catch {
             updateAvailable = false
             downloadURL = nil
@@ -95,7 +102,8 @@ internal final class UpdateManager {
             expectedSHA256 = nil
             latestManifest = nil
             statusText = "Update check failed"
-            Self.logger.error("Update check failed: \(error.localizedDescription, privacy: .public)")
+            Self.logger.error(
+                "Update check failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -123,15 +131,19 @@ internal final class UpdateManager {
         statusText = "Downloading update..."
 
         do {
-            let (temporaryURL, response) = try await URLSession.shared.download(from: manifest.dmgURL)
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            let (temporaryURL, response) = try await URLSession.shared.download(
+                from: manifest.dmgURL)
+            guard let httpResponse = response as? HTTPURLResponse,
+                (200...299).contains(httpResponse.statusCode)
+            else {
                 statusText = "Update download failed"
                 Self.logger.error("Update download failed with non-2xx response")
                 return
             }
 
             let computedSHA256 = try Self.streamedSHA256Hex(for: temporaryURL)
-            let expectedSHA256 = manifest.sha256.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let expectedSHA256 = manifest.sha256.trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
 
             guard computedSHA256 == expectedSHA256 else {
                 try? FileManager.default.removeItem(at: temporaryURL)
@@ -142,12 +154,14 @@ internal final class UpdateManager {
                 return
             }
 
-            let finalURL = try Self.persistDownloadedDMG(from: temporaryURL, sourceURL: manifest.dmgURL)
+            let finalURL = try Self.persistDownloadedDMG(
+                from: temporaryURL, sourceURL: manifest.dmgURL)
             statusText = "Verified update ready"
             NSWorkspace.shared.open(finalURL)
         } catch {
             statusText = "Update download failed"
-            Self.logger.error("Update download failed: \(error.localizedDescription, privacy: .public)")
+            Self.logger.error(
+                "Update download failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -206,7 +220,9 @@ internal final class UpdateManager {
     }
 
     private static func persistDownloadedDMG(from temporaryURL: URL, sourceURL: URL) throws -> URL {
-        let filename = sourceURL.lastPathComponent.isEmpty ? "Dhavnii-update.dmg" : sourceURL.lastPathComponent
+        let filename =
+            sourceURL.lastPathComponent.isEmpty
+            ? "Openwispher-update.dmg" : sourceURL.lastPathComponent
         let finalURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
 
         if FileManager.default.fileExists(atPath: finalURL.path) {

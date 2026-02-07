@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# openwhisper-speak - CLI tool for triggering TTS in OpenWhisper
+# openwispher-speak - CLI tool for triggering TTS in openwispher
 #
 
 set -e
@@ -44,12 +44,12 @@ if [[ -n "$FILE" ]]; then
 fi
 
 if [[ -z "$TEXT" ]]; then
-  echo "Usage: openwhisper-speak \"text\" [--provider groq|deepgram|elevenlabs|openai] [--voice voiceId] [--file path]"
+  echo "Usage: openwispher-speak \"text\" [--provider groq|deepgram|elevenlabs|openai] [--voice voiceId] [--file path]"
   exit 1
 fi
 
-if ! pgrep -x "dhavnii" > /dev/null; then
-  echo "Error: OpenWhisper is not running"
+if ! pgrep -x "openwispher" > /dev/null; then
+  echo "Error: openwispher is not running"
   exit 1
 fi
 
@@ -76,7 +76,7 @@ if (voice.length > 0) {
 
 $.NSDistributedNotificationCenter.defaultCenter
   .postNotificationName_object_userInfo_options(
-    $('OpenWhisper.TTS.Request'),
+    $('openwispher.TTS.Request'),
     null,
     userInfo,
     0

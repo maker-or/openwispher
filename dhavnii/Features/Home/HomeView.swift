@@ -145,7 +145,7 @@ struct HomeView: View {
 
             Text(section.rawValue)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(isSelected ? Color.red : Color.primary)
+                .foregroundStyle(isSelected ? Color.black : Color.primary)
 
             Spacer(minLength: 0)
         }

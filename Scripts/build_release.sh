@@ -1,18 +1,18 @@
 #!/bin/bash
 
-# Dhavnii Release Build Script
+# openwispher Release Build Script
 # Builds a Release version and installs it to Applications folder
 
 set -e  # Exit on error
 
-PROJECT_NAME="dhavnii"
+PROJECT_NAME="openwispher"
 RELEASE_APP_NAME="OpenWispher"
-APP_BUNDLE_ID="sphereai.in.dhavnii"
+APP_BUNDLE_ID="sphereai.in.openwispher"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="$PROJECT_DIR/build"
-SCHEME="dhavnii"
+SCHEME="openwispher"
 
-echo "🚀 Building Dhavnii Release Version..."
+echo "🚀 Building openwispher Release Version..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 

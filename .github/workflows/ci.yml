@@ -21,8 +21,8 @@ jobs:
       - name: Build (unsigned)
         run: |
           xcodebuild \
-            -project "dhavnii.xcodeproj" \
-            -scheme "dhavnii" \
+            -project "openwispher.xcodeproj" \
+            -scheme "openwispher" \
             -configuration Release \
             -destination "platform=macOS" \
             -derivedDataPath "build/DerivedData" \

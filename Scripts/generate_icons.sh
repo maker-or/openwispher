@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Icon Generator Script for Dhavnii
+# Icon Generator Script for openwispher
 # Generates all required macOS icon sizes from a single 1024×1024 source image
 
 set -e
 
-echo "🎨 Dhavnii Icon Generator"
+echo "🎨 openwispher Icon Generator"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
@@ -16,7 +16,7 @@ if [ -z "$1" ]; then
     echo "Usage: ./generate_icons.sh <path-to-1024x1024-icon.png>"
     echo ""
     echo "Example:"
-    echo "  ./generate_icons.sh ~/Desktop/dhavnii-icon.png"
+    echo "  ./generate_icons.sh ~/Desktop/openwispher-icon.png"
     echo ""
     echo "Requirements:"
     echo "  - Source image must be 1024×1024 PNG"
@@ -27,7 +27,7 @@ fi
 
 SOURCE_IMAGE="$1"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-OUTPUT_DIR="$SCRIPT_DIR/../dhavnii/Assets.xcassets/AppIcon.appiconset"
+OUTPUT_DIR="$SCRIPT_DIR/../openwispher/Assets.xcassets/AppIcon.appiconset"
 
 # Verify source image exists
 if [ ! -f "$SOURCE_IMAGE" ]; then

@@ -43,8 +43,8 @@ jobs:
       - name: Build app (unsigned)
         run: |
           xcodebuild \
-            -project "dhavnii.xcodeproj" \
-            -scheme "dhavnii" \
+            -project "openwispher.xcodeproj" \
+            -scheme "openwispher" \
             -configuration Release \
             -destination "platform=macOS" \
             -derivedDataPath "build/DerivedData" \
@@ -74,11 +74,11 @@ jobs:
             exit 1
           fi
 
-          VERSIONED_DMG="Dhavnii-${VERSION}.dmg"
-          LATEST_DMG="Dhavnii-latest.dmg"
+          VERSIONED_DMG="Openwispher-${VERSION}.dmg"
+          LATEST_DMG="Openwispher-latest.dmg"
 
           hdiutil create \
-            -volname "Dhavnii" \
+            -volname "Openwispher" \
             -srcfolder "dist/stage" \
             -ov \
             -format UDZO \
@@ -104,7 +104,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: Dhavnii v${{ steps.version.outputs.version }}
+          name: Openwispher v${{ steps.version.outputs.version }}
           generate_release_notes: true
           files: |
             dist/*.dmg

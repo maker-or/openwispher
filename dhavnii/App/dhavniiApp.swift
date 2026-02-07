@@ -1,16 +1,16 @@
 //
-//  dhavniiApp.swift
+//  openwispherApp.swift
 //  OpenWispher
 //
 //  Main application entry point with Settings window and menu bar.
 //
 
-import SwiftUI
-import SwiftData
 import AppKit
+import SwiftData
+import SwiftUI
 
 @main
-internal struct dhavniiApp: App {
+internal struct openwispherApp: App {
     @State private var appState = AppState()
     @State private var permissionManager = PermissionManager()
     @State private var historyManager: HistoryManager?
@@ -18,7 +18,7 @@ internal struct dhavniiApp: App {
     @State private var transcriptionService: TranscriptionService?
     @State private var hotkeyManager: HotkeyManager?
     @State private var notchController: NotchWindowController?
-    
+
     // SwiftData container
     let modelContainer: ModelContainer
 
@@ -67,7 +67,8 @@ internal struct dhavniiApp: App {
 
             CommandGroup(replacing: .appSettings) {
                 Button("Settings...") {
-                    NotificationCenter.default.post(name: Notification.Name("OpenSettingsWindow"), object: nil)
+                    NotificationCenter.default.post(
+                        name: Notification.Name("OpenSettingsWindow"), object: nil)
                 }
                 .keyboardShortcut(",", modifiers: .command)
             }
@@ -97,12 +98,12 @@ private struct AppContentView: View {
     @Binding var transcriptionService: TranscriptionService?
     @Binding var hotkeyManager: HotkeyManager?
     @Binding var notchController: NotchWindowController?
-    
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openWindow) private var openWindow
     @State private var hasSetup = false
     @State private var localHistoryManager: HistoryManager?
-    
+
     var body: some View {
         Group {
             if !appState.hasCompletedOnboarding {
@@ -110,7 +111,8 @@ private struct AppContentView: View {
                     appState.hasCompletedOnboarding = true
                     UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
                     appState.hasMicrophonePermission = permissionManager.hasMicrophonePermission
-                    appState.hasAccessibilityPermission = permissionManager.hasAccessibilityPermission
+                    appState.hasAccessibilityPermission =
+                        permissionManager.hasAccessibilityPermission
                 }
             } else {
                 HomeView(
@@ -128,21 +130,24 @@ private struct AppContentView: View {
                 hasSetup = true
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("OpenSettingsWindow"))) { _ in
+        .onReceive(
+            NotificationCenter.default.publisher(for: Notification.Name("OpenSettingsWindow"))
+        ) { _ in
             openWindow(id: "settings")
         }
     }
-    
+
     private func performSetup() {
         // Initialize history manager with shared context
         let manager = HistoryManager(modelContext: modelContext)
         localHistoryManager = manager
         historyManagerRef = manager
-        
+
         // Load selected transcription provider from UserDefaults
         let savedProviderRaw = UserDefaults.standard.string(forKey: "selectedTranscriptionProvider")
-        let selectedProvider = savedProviderRaw.flatMap { TranscriptionProviderType(rawValue: $0) } ?? .groq
-        
+        let selectedProvider =
+            savedProviderRaw.flatMap { TranscriptionProviderType(rawValue: $0) } ?? .groq
+
         // Initialize transcription service with selected provider
         let service = TranscriptionService(appState: appState, selectedProvider: selectedProvider)
         service.historyManager = manager
@@ -155,25 +160,27 @@ private struct AppContentView: View {
 
         // Initialize hotkey manager
         let savedHotkey = HotkeyDefinition.loadFromDefaults()
-        let hotkey = HotkeyManager(hotkey: savedHotkey, onTrigger: { [weak service, weak appState] in
-            guard let service = service, let appState = appState else {
-                print("❌ Hotkey triggered but service/appState is nil")
-                return
-            }
+        let hotkey = HotkeyManager(
+            hotkey: savedHotkey,
+            onTrigger: { [weak service, weak appState] in
+                guard let service = service, let appState = appState else {
+                    print("❌ Hotkey triggered but service/appState is nil")
+                    return
+                }
 
-            print("🎯 Hotkey triggered. Current state: \(appState.recordingState)")
+                print("🎯 Hotkey triggered. Current state: \(appState.recordingState)")
 
-            switch appState.recordingState {
-            case .recording:
-                print("⏹️ Stopping recording...")
-                service.stopRecording()
-            case .idle:
-                print("▶️ Starting recording...")
-                service.startRecording()
-            default:
-                print("⚠️ Cannot toggle - state is \(appState.recordingState)")
-            }
-        })
+                switch appState.recordingState {
+                case .recording:
+                    print("⏹️ Stopping recording...")
+                    service.stopRecording()
+                case .idle:
+                    print("▶️ Starting recording...")
+                    service.startRecording()
+                default:
+                    print("⚠️ Cannot toggle - state is \(appState.recordingState)")
+                }
+            })
         hotkey.startMonitoring()
         hotkeyManager = hotkey
 
@@ -210,8 +217,12 @@ private struct AppContentView: View {
     private func resetOnboardingIfNewBuild(defaults: UserDefaults) {
         let currentBuild = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
         let lastBuild = defaults.string(forKey: "lastOnboardingBuild")
-        let executableTimestamp = Bundle.main.executableURL
-            .flatMap { try? FileManager.default.attributesOfItem(atPath: $0.path)[.modificationDate] as? Date }
+        let executableTimestamp =
+            Bundle.main.executableURL
+            .flatMap {
+                try? FileManager.default.attributesOfItem(atPath: $0.path)[.modificationDate]
+                    as? Date
+            }
             .map { String($0.timeIntervalSince1970) } ?? "unknown"
         let buildSignature = "\(currentBuild)|\(executableTimestamp)"
         let lastSignature = defaults.string(forKey: "lastOnboardingBuildSignature")
@@ -228,7 +239,7 @@ private struct AppContentView: View {
 
 }
 
-// Note: MainView, StatusIndicator, TranscriptionPreview, PermissionWarningView, 
+// Note: MainView, StatusIndicator, TranscriptionPreview, PermissionWarningView,
 // PermissionInfoCard, TranscriptionHistoryList, and TranscriptionRowItem have been removed
 // as they were legacy/dead code. The main UI now uses HomeView exclusively.
 
@@ -237,10 +248,10 @@ private struct SettingsViewWrapper: View {
     var permissionManager: PermissionManager
     var appState: AppState
     @Binding var hotkeyManager: HotkeyManager?
-    
+
     @Environment(\.modelContext) private var modelContext
     @State private var historyManager: HistoryManager?
-    
+
     var body: some View {
         SettingsView(
             permissionManager: permissionManager,
