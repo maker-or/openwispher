@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import Carbon.HIToolbox
 import SwiftUI
 
 /// Onboarding view for permission requests
@@ -70,7 +71,11 @@ struct OnboardingView: View {
                 hotkey = HotkeyDefinition.loadFromDefaults()
             }
         }
-        .onChange(of: hotkey) { _, newValue in
+        .onChange(of: hotkey) { oldValue, newValue in
+            guard oldValue != newValue else { return }
+            if hotkeyManager?.currentHotkey == newValue {
+                return
+            }
             applyHotkeyChange(newValue)
         }
         .onChange(of: permissionManager.hasAllPermissions) { _, hasAllPermissions in
