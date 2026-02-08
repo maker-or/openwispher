@@ -113,24 +113,24 @@ internal struct SettingsView: View {
             Spacer()
 
             // Bottom info
-            VStack(spacing: 12) {
-                Divider()
-                    .padding(.horizontal, 16)
+            // VStack(spacing: 12) {
+            //     Divider()
+            //         .padding(.horizontal, 16)
 
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.tertiary)
+            //     HStack(spacing: 8) {
+            //         Image(systemName: "info.circle")
+            //             .font(.system(size: 12))
+            //             .foregroundStyle(.tertiary)
 
-                    Text("OpenWispher v1.0")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.tertiary)
+            //         Text("OpenWispher v1.0")
+            //             .font(.system(size: 11))
+            //             .foregroundStyle(.tertiary)
 
-                    Spacer()
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
-            }
+            //         Spacer()
+            //     }
+            //     .padding(.horizontal, 16)
+            //     .padding(.bottom, 16)
+            // }
         }
         .frame(minWidth: 220)
         .background(.ultraThinMaterial)
@@ -952,15 +952,15 @@ private struct AboutSettingsView: View {
 
             // App Icon
             VStack(spacing: 16) {
-                Image(systemName: "waveform.circle.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.cyan, .blue],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                // Image(systemName: "waveform.circle.fill")
+                //     .font(.system(size: 64))
+                //     .foregroundStyle(
+                //         LinearGradient(
+                //             colors: [.cyan, .blue],
+                //             startPoint: .topLeading,
+                //             endPoint: .bottomTrailing
+                //         )
+                //     )
 
                 VStack(spacing: 4) {
                     Text("OpenWispher")
@@ -1028,40 +1028,15 @@ private struct AboutSettingsView: View {
                     .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
             )
             .padding(.horizontal, 60)
-
-            Spacer()
-                .frame(height: 24)
-
-            // Features
-            VStack(spacing: 12) {
-                FeatureRow(icon: "mic.fill", text: "Voice transcription")
-                FeatureRow(icon: "bolt.fill", text: "Powered by Groq AI")
-                FeatureRow(icon: "keyboard", text: "Auto-paste anywhere")
-                FeatureRow(
-                    icon: "command",
-                    text: "Global hotkey: \(HotkeyDefinition.loadFromDefaults().displayString)"
-                )
-            }
-            .padding(24)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.primary.opacity(0.02))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
-            )
-            .padding(.horizontal, 60)
-
             Spacer()
 
             // Links
             HStack(spacing: 24) {
-                Link("GitHub", destination: URL(string: "https://github.com")!)
+                Link("GitHub", destination: URL(string: "https://github.com/maker-or/openwispher")!)
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
 
-                Link("Support", destination: URL(string: "mailto:support@openwispher.app")!)
+                Link("Support", destination: URL(string: "mailto:harshith10295032@gmail.com")!)
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
             }

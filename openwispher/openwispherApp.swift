@@ -103,6 +103,8 @@ private struct AppContentView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var hasSetup = false
     @State private var localHistoryManager: HistoryManager?
+    @State private var updateManager = UpdateManager()
+    @State private var hasCheckedUpdatesOnLaunch = false
 
     var body: some View {
         Group {
@@ -135,6 +137,26 @@ private struct AppContentView: View {
         ) { _ in
             openWindow(id: "settings")
         }
+        .task {
+            guard !hasCheckedUpdatesOnLaunch else { return }
+            hasCheckedUpdatesOnLaunch = true
+            await updateManager.checkForUpdates()
+
+            guard updateManager.updateAvailable else { return }
+            let latestVersion = updateManager.latestVersion ?? "latest"
+            FeedbackManager.shared.show(
+                FeedbackMessage(
+                    type: .info,
+                    title: "Update available",
+                    message: "Version \(latestVersion) is ready to download.",
+                    duration: UIConstants.Toast.infoDuration,
+                    action: FeedbackAction(title: "Download") {
+                        updateManager.openDownloadURL()
+                    }
+                )
+            )
+        }
+        .withToasts()
     }
 
     private func performSetup() {
