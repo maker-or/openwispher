@@ -109,7 +109,7 @@ private struct AppContentView: View {
     var body: some View {
         Group {
             if !appState.hasCompletedOnboarding {
-                OnboardingView(permissionManager: permissionManager) {
+                OnboardingView(permissionManager: permissionManager, hotkeyManager: hotkeyManager) {
                     appState.hasCompletedOnboarding = true
                     UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
                     appState.hasMicrophonePermission = permissionManager.hasMicrophonePermission

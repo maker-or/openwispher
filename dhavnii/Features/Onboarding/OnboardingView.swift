@@ -6,17 +6,22 @@
 //
 
 import AppKit
+import Carbon.HIToolbox
 import SwiftUI
 
 /// Onboarding view for permission requests
 struct OnboardingView: View {
     var permissionManager: PermissionManager
+    var hotkeyManager: HotkeyManager?
     let onComplete: () -> Void
 
     @State private var currentStep: OnboardingStep = .welcome
     @State private var didAutoAdvance = false
     @State private var didAutoComplete = false
     @State private var apiKeyText = ""
+    @State private var isRecordingHotkey = false
+    @State private var hotkey = HotkeyDefinition.loadFromDefaults()
+    @State private var isApplyingHotkey = false
     @AppStorage("selectedTranscriptionProvider") private var selectedProviderRaw =
         TranscriptionProviderType.groq.rawValue
 
@@ -25,6 +30,7 @@ struct OnboardingView: View {
         case provider
         case apiKey
         case permissions
+        case hotkey
     }
 
     var body: some View {
@@ -60,11 +66,25 @@ struct OnboardingView: View {
                 }
             }
         }
+        .onChange(of: currentStep) { _, newValue in
+            if newValue == .hotkey {
+                hotkey = HotkeyDefinition.loadFromDefaults()
+            }
+        }
+        .onChange(of: hotkey) { oldValue, newValue in
+            guard oldValue != newValue else { return }
+            if hotkeyManager?.currentHotkey == newValue {
+                return
+            }
+            applyHotkeyChange(newValue)
+        }
         .onChange(of: permissionManager.hasAllPermissions) { _, hasAllPermissions in
             guard currentStep == .permissions, hasAllPermissions, !didAutoComplete else { return }
             didAutoComplete = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                finishOnboarding()
+                withAnimation(.easeInOut(duration: 0.4)) {
+                    currentStep = .hotkey
+                }
             }
         }
         .animation(.easeInOut(duration: 0.3), value: currentStep)
@@ -119,7 +139,29 @@ struct OnboardingView: View {
             )
         case .permissions:
             PermissionsStepContent(
-                permissionManager: permissionManager, onComplete: finishOnboarding)
+                permissionManager: permissionManager,
+                onContinue: {
+                    playChime()
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        currentStep = .hotkey
+                    }
+                }
+            )
+        case .hotkey:
+            HotkeySetupScreen(
+                hotkey: $hotkey,
+                isRecordingHotkey: $isRecordingHotkey,
+                onBack: {
+                    playChime()
+                    withAnimation(.easeInOut(duration: 0.35)) {
+                        currentStep = .permissions
+                    }
+                },
+                onContinue: {
+                    playChime()
+                    finishOnboarding()
+                }
+            )
         }
     }
 
@@ -141,6 +183,29 @@ struct OnboardingView: View {
         guard !trimmedKey.isEmpty else { return }
         try? SecureStorage.storeAPIKey(trimmedKey, for: selectedProvider)
         apiKeyText = ""
+    }
+
+    private func applyHotkeyChange(_ newHotkey: HotkeyDefinition) {
+        guard !isApplyingHotkey else { return }
+        isApplyingHotkey = true
+        defer { isApplyingHotkey = false }
+
+        guard let hotkeyManager = hotkeyManager else {
+            newHotkey.saveToDefaults()
+            return
+        }
+
+        if hotkeyManager.updateHotkey(newHotkey) {
+            newHotkey.saveToDefaults()
+        } else {
+            FeedbackManager.shared.error(
+                "Hotkey Unavailable",
+                message: "That shortcut could not be registered. Try a different combination."
+            )
+            let fallback = hotkeyManager.currentHotkey
+            hotkey = fallback
+            fallback.saveToDefaults()
+        }
     }
 }
 
@@ -174,7 +239,7 @@ private struct WelcomeScreen: View {
 
 private struct PermissionsStepContent: View {
     var permissionManager: PermissionManager
-    let onComplete: () -> Void
+    let onContinue: () -> Void
 
     var body: some View {
         VStack(spacing: 20) {
@@ -205,14 +270,14 @@ private struct PermissionsStepContent: View {
             }
 
             if permissionManager.hasAllPermissions {
-                Button("Get Started") {
-                    onComplete()
+                Button("Continue") {
+                    onContinue()
                 }
                 .buttonStyle(.borderedProminent)
-                .accessibilityLabel("Get started")
+                .accessibilityLabel("Continue")
             } else {
                 Button("Continue Anyway") {
-                    onComplete()
+                    onContinue()
                 }
                 .buttonStyle(.bordered)
                 .accessibilityLabel("Continue anyway")
@@ -330,6 +395,85 @@ private struct ApiKeyScreen: View {
     }
 }
 
+private struct HotkeySetupScreen: View {
+    @Binding var hotkey: HotkeyDefinition
+    @Binding var isRecordingHotkey: Bool
+    let onBack: () -> Void
+    let onContinue: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Set your shortcut")
+                .font(.system(size: 36, weight: .medium))
+                .foregroundStyle(.primary)
+
+            VStack(spacing: 12) {
+                OnboardingPanel {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("Default")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundStyle(.secondary)
+
+                            Spacer()
+
+                            Text(HotkeyDefinition.defaultHotkey.displayString)
+                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                                .foregroundStyle(.primary)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 14)
+
+                        Divider()
+                            .opacity(0.2)
+
+                        HStack {
+                            Text("Current")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundStyle(.secondary)
+
+                            Spacer()
+
+                            HotkeyRecorderControl(
+                                hotkey: $hotkey,
+                                isRecording: $isRecordingHotkey
+                            )
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 14)
+                    }
+                }
+                .frame(width: 420)
+
+                Text("Click the shortcut to change it. Press Esc to cancel.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            HStack(spacing: 12) {
+                Button("Use Default") {
+                    hotkey = .defaultHotkey
+                }
+                .buttonStyle(.bordered)
+
+                Spacer()
+                    .frame(width: 8)
+
+                Button("Back") {
+                    onBack()
+                }
+                .buttonStyle(.bordered)
+
+                Button("Continue") {
+                    onContinue()
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
 // MARK: - Permissions Card
 
 private struct PermissionsCard<Content: View>: View {
@@ -405,5 +549,131 @@ private struct PermissionRow: View {
 // MARK: - Preview
 
 #Preview {
-    OnboardingView(permissionManager: PermissionManager()) {}
+    OnboardingView(permissionManager: PermissionManager(), hotkeyManager: nil) {}
+}
+
+// MARK: - Hotkey Recorder
+
+private struct HotkeyRecorderControl: View {
+    @Binding var hotkey: HotkeyDefinition
+    @Binding var isRecording: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            if isRecording {
+                Text("Press shortcut")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+            } else {
+                Text(hotkey.displayString)
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+            }
+        }
+        .foregroundStyle(isRecording ? .primary : .secondary)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(Color.primary.opacity(isRecording ? 0.12 : 0.06))
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            isRecording = true
+        }
+        .help(isRecording ? "Press a shortcut, Esc to cancel" : "Click to set a shortcut")
+        .background(
+            HotkeyRecorderRepresentable(isRecording: $isRecording, hotkey: $hotkey)
+                .frame(width: 0, height: 0)
+        )
+    }
+}
+
+private struct HotkeyRecorderRepresentable: NSViewRepresentable {
+    @Binding var isRecording: Bool
+    @Binding var hotkey: HotkeyDefinition
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(isRecording: $isRecording, hotkey: $hotkey)
+    }
+
+    func makeNSView(context: Context) -> HotkeyRecorderNSView {
+        let view = HotkeyRecorderNSView()
+        view.onHotkeyCaptured = { capturedHotkey in
+            context.coordinator.capture(hotkey: capturedHotkey)
+        }
+        view.onCancel = {
+            context.coordinator.cancel()
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: HotkeyRecorderNSView, context: Context) {
+        nsView.isRecording = isRecording
+    }
+
+    final class Coordinator {
+        @Binding var isRecording: Bool
+        @Binding var hotkey: HotkeyDefinition
+
+        init(isRecording: Binding<Bool>, hotkey: Binding<HotkeyDefinition>) {
+            _isRecording = isRecording
+            _hotkey = hotkey
+        }
+
+        func capture(hotkey: HotkeyDefinition) {
+            self.hotkey = hotkey
+            isRecording = false
+        }
+
+        func cancel() {
+            isRecording = false
+        }
+    }
+}
+
+private final class HotkeyRecorderNSView: NSView {
+    var isRecording: Bool = false {
+        didSet {
+            if isRecording {
+                window?.makeFirstResponder(self)
+            }
+        }
+    }
+
+    var onHotkeyCaptured: ((HotkeyDefinition) -> Void)?
+    var onCancel: (() -> Void)?
+
+    override var acceptsFirstResponder: Bool {
+        true
+    }
+
+    override func keyDown(with event: NSEvent) {
+        guard isRecording else {
+            super.keyDown(with: event)
+            return
+        }
+
+        if event.keyCode == UInt16(kVK_Escape) {
+            isRecording = false
+            onCancel?()
+            return
+        }
+
+        let modifierFlags = event.modifierFlags
+        let hasModifiers = modifierFlags.contains(.command)
+            || modifierFlags.contains(.option)
+            || modifierFlags.contains(.control)
+            || modifierFlags.contains(.shift)
+
+        guard hasModifiers else {
+            FeedbackManager.shared.warning(
+                "Shortcut needs modifiers",
+                message: "Use Command, Option, Control, or Shift with a key."
+            )
+            return
+        }
+
+        let modifiers = HotkeyDefinition.modifiersFrom(flags: modifierFlags)
+        let hotkey = HotkeyDefinition(keyCode: UInt32(event.keyCode), modifiers: modifiers)
+        onHotkeyCaptured?(hotkey)
+    }
 }
