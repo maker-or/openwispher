@@ -97,16 +97,6 @@ struct HomeView: View {
                         openWindow(id: "settings")
                     } label: {
                         HStack(spacing: 10) {
-                            SidebarIconTile(
-                                systemName: "gearshape",
-                                colors: [
-                                    Color(red: 0.64, green: 0.72, blue: 0.98),
-                                    Color(red: 0.42, green: 0.50, blue: 0.90),
-
-                                ],
-                                size: 24,
-                                symbolSize: 12
-                            )
 
                             Text("Settings")
                                 .font(.system(size: 13, weight: .medium))
@@ -145,7 +135,7 @@ struct HomeView: View {
 
             Text(section.rawValue)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(isSelected ? Color.white : Color.primary)
+                .foregroundStyle(isSelected ? Color.black : Color.primary)
 
             Spacer(minLength: 0)
         }
@@ -201,9 +191,6 @@ struct HomeContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            contentHeader
-
-            Divider()
 
             // Content
             if viewModel.transcriptions.isEmpty {
