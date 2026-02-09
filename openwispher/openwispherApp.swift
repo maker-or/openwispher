@@ -47,6 +47,7 @@ internal struct openwispherApp: App {
                 NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
             ) { _ in
                 permissionManager.checkPermissions()
+                AnalyticsManager.shared.trackAppOpened()
             }
             .preferredColorScheme(.dark)
         }
@@ -191,6 +192,8 @@ private struct AppContentView: View {
                 }
 
                 print("🎯 Hotkey triggered. Current state: \(appState.recordingState)")
+                // Use savedHotkey to avoid capturing 'hotkey' before declaration
+                AnalyticsManager.shared.trackHotkeyPressed(hotkey: savedHotkey)
 
                 switch appState.recordingState {
                 case .recording:

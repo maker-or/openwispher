@@ -6,8 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B30F3D902C1F4F1D8B7B61F2 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = B30F3D8F2C1F4F1D8B7B61F2 /* PostHog */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		B329B7AA2F0E4D42000DC9ED /* Openwispher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Openwispher.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B329B7AA2F0E4D42000DC9ED /* Openwispher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Openwispher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -28,6 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B30F3D902C1F4F1D8B7B61F2 /* PostHog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,6 +77,7 @@
 			);
 			name = openwispher;
 			packageProductDependencies = (
+				B30F3D8F2C1F4F1D8B7B61F2 /* PostHog */,
 			);
 			productName = openwispher;
 			productReference = B329B7AA2F0E4D42000DC9ED /* Openwispher.app */;
@@ -92,7 +98,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B329B7A52F0E4D42000DC9ED /* Build configuration list for PBXProject "openwispher" */;
+			buildConfigurationList = B329B7A52F0E4D42000DC9ED /* Build configuration list for PBXProject "dhavnii" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -101,6 +107,9 @@
 			);
 			mainGroup = B329B7A12F0E4D42000DC9ED;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B30F3D8E2C1F4F1D8B7B61F2 /* XCRemoteSwiftPackageReference "posthog-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B329B7AB2F0E4D42000DC9ED /* Products */;
 			projectDirPath = "";
@@ -265,17 +274,15 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Openwispher";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Openwispher needs access to your microphone to record speech for transcription.";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = openwispher/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = in.sphereai.openwispher;
-				PRODUCT_NAME = "Openwispher";
+				PRODUCT_NAME = Openwispher;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -301,17 +308,15 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Openwispher";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Openwispher needs access to your microphone to record speech for transcription.";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = openwispher/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = in.sphereai.openwispher;
-				PRODUCT_NAME = "Openwispher";
+				PRODUCT_NAME = Openwispher;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -325,7 +330,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B329B7A52F0E4D42000DC9ED /* Build configuration list for PBXProject "openwispher" */ = {
+		B329B7A52F0E4D42000DC9ED /* Build configuration list for PBXProject "dhavnii" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B329B7B32F0E4D43000DC9ED /* Debug */,
@@ -344,6 +349,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B30F3D8E2C1F4F1D8B7B61F2 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B30F3D8F2C1F4F1D8B7B61F2 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B30F3D8E2C1F4F1D8B7B61F2 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B329B7A22F0E4D42000DC9ED /* Project object */;
 }
