@@ -967,9 +967,6 @@ private struct AboutSettingsView: View {
                         .font(.title2)
                         .fontWeight(.semibold)
 
-                    Text("Version \(updateManager.currentVersion)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
                 }
             }
 
@@ -981,9 +978,7 @@ private struct AboutSettingsView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Software Updates")
                             .font(.headline)
-                        Text(updateManager.statusText)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+
                     }
 
                     Spacer()

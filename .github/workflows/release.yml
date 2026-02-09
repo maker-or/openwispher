@@ -41,6 +41,9 @@ jobs:
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Build app (unsigned)
+        env:
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
         run: |
           xcodebuild \
             -project "dhavnii.xcodeproj" \
@@ -51,7 +54,9 @@ jobs:
             clean build \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            POSTHOG_API_KEY="$POSTHOG_API_KEY" \
+            POSTHOG_HOST="$POSTHOG_HOST"
 
       - name: Create DMG and metadata
         id: pkg
