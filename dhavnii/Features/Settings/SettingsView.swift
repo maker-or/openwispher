@@ -494,6 +494,55 @@ private struct ProvidersSettingsView: View {
                         ($0.rawValue, $0.displayName, $0.description)
                     },
                     selectedProvider: $selectedProviderRaw,
+                    getModelOptions: { provider in
+                        guard let type = TranscriptionProviderType(rawValue: provider) else {
+                            return []
+                        }
+                        return type.modelOptions
+                    },
+                    getSelectedModel: { provider in
+                        guard let type = TranscriptionProviderType(rawValue: provider) else {
+                            return ""
+                        }
+                        return type.selectedModelID
+                    },
+                    setSelectedModel: { provider, model in
+                        guard let type = TranscriptionProviderType(rawValue: provider) else {
+                            return
+                        }
+                        let resolvedModel = type.resolveModelID(model)
+                        UserDefaults.standard.set(resolvedModel, forKey: type.modelUserDefaultsKey)
+
+                        let storedLanguage = UserDefaults.standard.string(
+                            forKey: type.languageUserDefaultsKey)
+                        let resolvedLanguage = type.resolveLanguageID(
+                            storedLanguage,
+                            modelID: resolvedModel
+                        )
+                        UserDefaults.standard.set(
+                            resolvedLanguage,
+                            forKey: type.languageUserDefaultsKey
+                        )
+                    },
+                    getLanguageOptions: { provider, model in
+                        guard let type = TranscriptionProviderType(rawValue: provider) else {
+                            return []
+                        }
+                        return type.languageOptions(for: model)
+                    },
+                    getSelectedLanguage: { provider, model in
+                        guard let type = TranscriptionProviderType(rawValue: provider) else {
+                            return ""
+                        }
+                        return type.selectedLanguageID(for: model)
+                    },
+                    setSelectedLanguage: { provider, model, language in
+                        guard let type = TranscriptionProviderType(rawValue: provider) else {
+                            return
+                        }
+                        let resolvedLanguage = type.resolveLanguageID(language, modelID: model)
+                        UserDefaults.standard.set(resolvedLanguage, forKey: type.languageUserDefaultsKey)
+                    },
                     getAPIKey: { provider in
                         guard let type = TranscriptionProviderType(rawValue: provider) else {
                             return nil
@@ -530,6 +579,12 @@ private struct ProviderCard: View {
     let icon: String
     let providers: [(id: String, name: String, description: String)]
     @Binding var selectedProvider: String
+    let getModelOptions: (String) -> [TranscriptionModelOption]
+    let getSelectedModel: (String) -> String
+    let setSelectedModel: (String, String) -> Void
+    let getLanguageOptions: (String, String) -> [TranscriptionLanguageOption]
+    let getSelectedLanguage: (String, String) -> String
+    let setSelectedLanguage: (String, String, String) -> Void
     let getAPIKey: (String) -> String?
     let setAPIKey: (String, String) -> Void
     let deleteAPIKey: (String) -> Void
@@ -537,9 +592,43 @@ private struct ProviderCard: View {
     @State private var apiKeyText = ""
     @State private var isEditing = false
     @State private var hasKey = false
+    @State private var selectedModel = ""
+    @State private var selectedLanguage = ""
 
     private var selectedName: String {
         providers.first { $0.id == selectedProvider }?.name ?? "Select"
+    }
+
+    private var modelOptions: [TranscriptionModelOption] {
+        getModelOptions(selectedProvider)
+    }
+
+    private var selectedModelName: String {
+        modelOptions.first { $0.id == selectedModel }?.name
+            ?? modelOptions.first?.name
+            ?? "Select"
+    }
+
+    private var selectedModelDescription: String {
+        modelOptions.first { $0.id == selectedModel }?.description
+            ?? modelOptions.first?.description
+            ?? ""
+    }
+
+    private var languageOptions: [TranscriptionLanguageOption] {
+        getLanguageOptions(selectedProvider, selectedModel)
+    }
+
+    private var selectedLanguageName: String {
+        languageOptions.first { $0.id == selectedLanguage }?.name
+            ?? languageOptions.first?.name
+            ?? "Select"
+    }
+
+    private var selectedLanguageDescription: String {
+        languageOptions.first { $0.id == selectedLanguage }?.description
+            ?? languageOptions.first?.description
+            ?? ""
     }
 
     var body: some View {
@@ -593,6 +682,100 @@ private struct ProviderCard: View {
                     )
                 }
                 .menuStyle(.borderlessButton)
+            }
+            .padding(16)
+
+            Divider()
+                .padding(.horizontal, 16)
+
+            // Model Selection
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Model")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+
+                    Spacer()
+
+                    Menu {
+                        ForEach(modelOptions) { model in
+                            Button(model.name) {
+                                selectedModel = model.id
+                                setSelectedModel(selectedProvider, model.id)
+                                checkLanguage()
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(selectedModelName)
+                                .font(.system(size: 13, weight: .medium))
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.tertiary)
+                        }
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color.primary.opacity(0.06))
+                        )
+                    }
+                    .menuStyle(.borderlessButton)
+                }
+
+                if !selectedModelDescription.isEmpty {
+                    Text(selectedModelDescription)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .padding(16)
+
+            Divider()
+                .padding(.horizontal, 16)
+
+            // Language Selection
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Language")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+
+                    Spacer()
+
+                    Menu {
+                        ForEach(languageOptions) { language in
+                            Button(language.name) {
+                                selectedLanguage = language.id
+                                setSelectedLanguage(selectedProvider, selectedModel, language.id)
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(selectedLanguageName)
+                                .font(.system(size: 13, weight: .medium))
+                                .lineLimit(1)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.tertiary)
+                        }
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color.primary.opacity(0.06))
+                        )
+                    }
+                    .menuStyle(.borderlessButton)
+                }
+
+                if !selectedLanguageDescription.isEmpty {
+                    Text(selectedLanguageDescription)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
             }
             .padding(16)
 
@@ -682,16 +865,59 @@ private struct ProviderCard: View {
                 .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
         )
         .onAppear { checkKey() }
+        .onAppear {
+            checkModel()
+            checkLanguage()
+        }
         .onChange(of: selectedProvider) { _, _ in
             checkKey()
+            checkModel()
+            checkLanguage()
             isEditing = false
             apiKeyText = ""
+        }
+        .onChange(of: selectedModel) { _, _ in
+            checkLanguage()
         }
     }
 
     private func checkKey() {
         let key = getAPIKey(selectedProvider)
         hasKey = key != nil && !key!.isEmpty
+    }
+
+    private func checkModel() {
+        let storedModel = getSelectedModel(selectedProvider)
+        let options = getModelOptions(selectedProvider)
+        if options.contains(where: { $0.id == storedModel }) {
+            selectedModel = storedModel
+            return
+        }
+
+        guard let fallback = options.first else {
+            selectedModel = ""
+            return
+        }
+
+        selectedModel = fallback.id
+        setSelectedModel(selectedProvider, fallback.id)
+    }
+
+    private func checkLanguage() {
+        let storedLanguage = getSelectedLanguage(selectedProvider, selectedModel)
+        let options = getLanguageOptions(selectedProvider, selectedModel)
+        if options.contains(where: { $0.id == storedLanguage }) {
+            selectedLanguage = storedLanguage
+            return
+        }
+
+        guard let fallback = options.first else {
+            selectedLanguage = ""
+            return
+        }
+
+        selectedLanguage = fallback.id
+        setSelectedLanguage(selectedProvider, selectedModel, fallback.id)
     }
 }
 
@@ -816,6 +1042,10 @@ private struct GeneralSettingsView: View {
         UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
         UserDefaults.standard.removeObject(forKey: "autoLaunchEnabled")
         UserDefaults.standard.removeObject(forKey: "selectedTranscriptionProvider")
+        for provider in TranscriptionProviderType.allCases {
+            UserDefaults.standard.removeObject(forKey: provider.modelUserDefaultsKey)
+            UserDefaults.standard.removeObject(forKey: provider.languageUserDefaultsKey)
+        }
         UserDefaults.standard.removeObject(forKey: HotkeyDefinition.keyCodeDefaultsKey)
         UserDefaults.standard.removeObject(forKey: HotkeyDefinition.modifiersDefaultsKey)
         UserDefaults.standard.synchronize()

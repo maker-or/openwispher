@@ -43,10 +43,10 @@ internal final class AnalyticsManager {
         config.personProfiles = .never
         config.captureApplicationLifecycleEvents = false
         config.captureScreenViews = false
+        config.flushAt = 1
 
         #if DEBUG
         config.debug = true
-        config.flushAt = 1
         #endif
 
         PostHogSDK.shared.setup(config)
@@ -62,11 +62,7 @@ internal final class AnalyticsManager {
             #endif
             return
         }
-        PostHogSDK.shared.capture("app_opened")
-
-        #if DEBUG
-        PostHogSDK.shared.flush()
-        #endif
+        captureAndFlush("app_opened")
     }
 
     internal func trackHotkeyPressed(hotkey: HotkeyDefinition) {
@@ -76,7 +72,7 @@ internal final class AnalyticsManager {
             #endif
             return
         }
-        PostHogSDK.shared.capture(
+        captureAndFlush(
             "hotkey_pressed",
             properties: [
                 "hotkey_key_code": Int(hotkey.keyCode),
@@ -84,10 +80,28 @@ internal final class AnalyticsManager {
                 "hotkey_display": hotkey.displayString,
             ]
         )
+    }
 
-        #if DEBUG
+    internal func trackOnboardingStepViewed(step: String) {
+        guard configureIfNeeded() else { return }
+        captureAndFlush(
+            "onboarding_\(step)_viewed",
+            properties: ["step": step]
+        )
+    }
+
+    internal func trackOnboardingCompleted() {
+        guard configureIfNeeded() else { return }
+        captureAndFlush("onboarding_completed")
+    }
+
+    private func captureAndFlush(_ event: String, properties: [String: Any]? = nil) {
+        if let properties {
+            PostHogSDK.shared.capture(event, properties: properties)
+        } else {
+            PostHogSDK.shared.capture(event)
+        }
         PostHogSDK.shared.flush()
-        #endif
     }
 
     private func registerAppMetadata() {

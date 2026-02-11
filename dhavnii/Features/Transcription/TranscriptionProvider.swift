@@ -35,6 +35,420 @@ enum TranscriptionProviderType: String, CaseIterable, Identifiable {
     }
 }
 
+struct TranscriptionModelOption: Identifiable, Hashable {
+    let id: String
+    let name: String
+    let description: String
+}
+
+struct TranscriptionLanguageOption: Identifiable, Hashable {
+    nonisolated static let autoID = "auto"
+
+    let id: String
+    let name: String
+    let description: String
+
+    var isAuto: Bool {
+        id == Self.autoID
+    }
+}
+
+extension TranscriptionProviderType {
+    nonisolated var modelUserDefaultsKey: String {
+        switch self {
+        case .groq:
+            return "selectedGroqTranscriptionModel"
+        case .elevenLabs:
+            return "selectedElevenLabsTranscriptionModel"
+        case .deepgram:
+            return "selectedDeepgramTranscriptionModel"
+        }
+    }
+
+    nonisolated var defaultModelID: String {
+        switch self {
+        case .groq:
+            return "whisper-large-v3"
+        case .elevenLabs:
+            return "scribe_v2"
+        case .deepgram:
+            return "nova-3"
+        }
+    }
+
+    nonisolated var modelOptions: [TranscriptionModelOption] {
+        switch self {
+        case .groq:
+            return [
+                TranscriptionModelOption(
+                    id: "whisper-large-v3",
+                    name: "Whisper Large v3",
+                    description: "General-purpose OpenAI Whisper model via Groq"
+                )
+            ]
+        case .elevenLabs:
+            return [
+                TranscriptionModelOption(
+                    id: "scribe_v2",
+                    name: "scribe_v2",
+                    description: "State-of-the-art speech recognition model"
+                ),
+                TranscriptionModelOption(
+                    id: "scribe_v1",
+                    name: "scribe_v1",
+                    description: "Previous generation model, generally superseded by v2"
+                ),
+            ]
+        case .deepgram:
+            return [
+                TranscriptionModelOption(
+                    id: "flux",
+                    name: "Flux",
+                    description:
+                        "Streaming model with native turn detection for real-time conversations"
+                ),
+                TranscriptionModelOption(
+                    id: "nova-3",
+                    name: "nova-3",
+                    description:
+                        "Highest-performing general ASR for meetings, noisy and multi-speaker audio"
+                ),
+                TranscriptionModelOption(
+                    id: "nova-2",
+                    name: "nova-2",
+                    description:
+                        "Recommended for languages not yet supported by nova-3 and filler words"
+                ),
+            ]
+        }
+    }
+
+    nonisolated var languageUserDefaultsKey: String {
+        switch self {
+        case .groq:
+            return "selectedGroqTranscriptionLanguage"
+        case .elevenLabs:
+            return "selectedElevenLabsTranscriptionLanguage"
+        case .deepgram:
+            return "selectedDeepgramTranscriptionLanguage"
+        }
+    }
+
+    nonisolated var selectedModelID: String {
+        let storedModel = UserDefaults.standard.string(forKey: modelUserDefaultsKey)
+        return resolveModelID(storedModel)
+    }
+
+    nonisolated var selectedAPIModelID: String {
+        apiModelID(for: selectedModelID)
+    }
+
+    nonisolated func selectedLanguageID(for modelID: String? = nil) -> String {
+        let resolvedModel = resolveModelID(modelID)
+        let storedLanguage = UserDefaults.standard.string(forKey: languageUserDefaultsKey)
+        return resolveLanguageID(storedLanguage, modelID: resolvedModel)
+    }
+
+    nonisolated func defaultLanguageID(for modelID: String? = nil) -> String {
+        let resolvedModel = resolveModelID(modelID)
+        switch self {
+        case .groq:
+            return TranscriptionLanguageOption.autoID
+        case .elevenLabs:
+            return TranscriptionLanguageOption.autoID
+        case .deepgram:
+            return resolvedModel == "flux" ? "en" : TranscriptionLanguageOption.autoID
+        }
+    }
+
+    nonisolated func languageOptions(for modelID: String? = nil) -> [TranscriptionLanguageOption] {
+        let resolvedModel = resolveModelID(modelID)
+
+        switch self {
+        case .groq:
+            return [
+                TranscriptionLanguageOption(
+                    id: TranscriptionLanguageOption.autoID,
+                    name: "Auto",
+                    description: "Model selects the language from audio"
+                )
+            ]
+
+        case .elevenLabs:
+            return [
+                TranscriptionLanguageOption(
+                    id: TranscriptionLanguageOption.autoID,
+                    name: "Auto",
+                    description: "Automatically detect language from audio"
+                )
+            ] + Self.expandLanguageGroups(Self.elevenLabsLanguageGroups)
+
+        case .deepgram:
+            switch resolvedModel {
+            case "flux":
+                return [
+                    TranscriptionLanguageOption(
+                        id: "en",
+                        name: "English",
+                        description: "Flux supports English"
+                    )
+                ]
+            case "nova-2":
+                return [
+                    TranscriptionLanguageOption(
+                        id: TranscriptionLanguageOption.autoID,
+                        name: "Auto",
+                        description: "Detect dominant language from audio"
+                    )
+                ] + Self.expandLanguageGroups(Self.deepgramNova2LanguageGroups)
+            default:
+                return [
+                    TranscriptionLanguageOption(
+                        id: TranscriptionLanguageOption.autoID,
+                        name: "Auto",
+                        description: "Detect dominant language from audio"
+                    )
+                ] + Self.expandLanguageGroups(Self.deepgramNova3LanguageGroups)
+            }
+        }
+    }
+
+    nonisolated func apiModelID(for modelID: String) -> String {
+        switch self {
+        case .deepgram:
+            return modelID == "flux" ? "flux-general-en" : modelID
+        case .groq, .elevenLabs:
+            return modelID
+        }
+    }
+
+    nonisolated func resolveModelID(_ value: String?) -> String {
+        guard let value, modelOptions.contains(where: { $0.id == value }) else {
+            return defaultModelID
+        }
+        return value
+    }
+
+    nonisolated func resolveLanguageID(_ value: String?, modelID: String? = nil) -> String {
+        let resolvedModel = resolveModelID(modelID)
+        let options = languageOptions(for: resolvedModel)
+
+        guard let value, options.contains(where: { $0.id == value }) else {
+            return defaultLanguageID(for: resolvedModel)
+        }
+
+        return value
+    }
+
+    nonisolated private static func expandLanguageGroups(_ groups: [(String, [String])]) -> [
+        TranscriptionLanguageOption
+    ] {
+        groups.flatMap { languageName, codes in
+            codes.map { code in
+                TranscriptionLanguageOption(
+                    id: code,
+                    name: codes.count == 1 ? languageName : "\(languageName) (\(code))",
+                    description: "Locale code: \(code)"
+                )
+            }
+        }
+    }
+
+    nonisolated private static let deepgramNova3LanguageGroups: [(String, [String])] = [
+        ("Arabic", ["ar", "ar-AE", "ar-SA", "ar-QA", "ar-KW", "ar-SY", "ar-LB", "ar-PS", "ar-JO", "ar-EG", "ar-SD", "ar-TD", "ar-MA", "ar-DZ", "ar-TN", "ar-IQ", "ar-IR"]),
+        ("Belarusian", ["be"]),
+        ("Bengali", ["bn"]),
+        ("Bosnian", ["bs"]),
+        ("Bulgarian", ["bg"]),
+        ("Catalan", ["ca"]),
+        ("Croatian", ["hr"]),
+        ("Czech", ["cs"]),
+        ("Danish", ["da", "da-DK"]),
+        ("Dutch", ["nl"]),
+        ("English", ["en", "en-US", "en-AU", "en-GB", "en-IN", "en-NZ"]),
+        ("Estonian", ["et"]),
+        ("Finnish", ["fi"]),
+        ("Flemish", ["nl-BE"]),
+        ("French", ["fr", "fr-CA"]),
+        ("German", ["de"]),
+        ("German (Switzerland)", ["de-CH"]),
+        ("Greek", ["el"]),
+        ("Hebrew", ["he"]),
+        ("Hindi", ["hi"]),
+        ("Hungarian", ["hu"]),
+        ("Indonesian", ["id"]),
+        ("Italian", ["it"]),
+        ("Japanese", ["ja"]),
+        ("Kannada", ["kn"]),
+        ("Korean", ["ko", "ko-KR"]),
+        ("Latvian", ["lv"]),
+        ("Lithuanian", ["lt"]),
+        ("Macedonian", ["mk"]),
+        ("Malay", ["ms"]),
+        ("Marathi", ["mr"]),
+        ("Norwegian", ["no"]),
+        ("Persian", ["fa"]),
+        ("Polish", ["pl"]),
+        ("Portuguese", ["pt", "pt-BR", "pt-PT"]),
+        ("Romanian", ["ro"]),
+        ("Russian", ["ru"]),
+        ("Serbian", ["sr"]),
+        ("Slovak", ["sk"]),
+        ("Slovenian", ["sl"]),
+        ("Spanish", ["es", "es-419"]),
+        ("Swedish", ["sv", "sv-SE"]),
+        ("Tagalog", ["tl"]),
+        ("Tamil", ["ta"]),
+        ("Telugu", ["te"]),
+        ("Turkish", ["tr"]),
+        ("Ukrainian", ["uk"]),
+        ("Urdu", ["ur"]),
+        ("Vietnamese", ["vi"]),
+    ]
+
+    nonisolated private static let deepgramNova2LanguageGroups: [(String, [String])] = [
+        ("Bulgarian", ["bg"]),
+        ("Catalan", ["ca"]),
+        ("Chinese (Mandarin, Simplified)", ["zh", "zh-CN", "zh-Hans"]),
+        ("Chinese (Mandarin, Traditional)", ["zh-TW", "zh-Hant"]),
+        ("Chinese (Cantonese, Traditional)", ["zh-HK"]),
+        ("Czech", ["cs"]),
+        ("Danish", ["da", "da-DK"]),
+        ("Dutch", ["nl"]),
+        ("English", ["en", "en-US", "en-AU", "en-GB", "en-NZ", "en-IN"]),
+        ("Estonian", ["et"]),
+        ("Finnish", ["fi"]),
+        ("Flemish", ["nl-BE"]),
+        ("French", ["fr", "fr-CA"]),
+        ("German", ["de"]),
+        ("German (Switzerland)", ["de-CH"]),
+        ("Greek", ["el"]),
+        ("Hindi", ["hi"]),
+        ("Hungarian", ["hu"]),
+        ("Indonesian", ["id"]),
+        ("Italian", ["it"]),
+        ("Japanese", ["ja"]),
+        ("Korean", ["ko", "ko-KR"]),
+        ("Latvian", ["lv"]),
+        ("Lithuanian", ["lt"]),
+        ("Malay", ["ms"]),
+        ("Norwegian", ["no"]),
+        ("Polish", ["pl"]),
+        ("Portuguese", ["pt", "pt-BR", "pt-PT"]),
+        ("Romanian", ["ro"]),
+        ("Russian", ["ru"]),
+        ("Slovak", ["sk"]),
+        ("Spanish", ["es", "es-419"]),
+        ("Swedish", ["sv", "sv-SE"]),
+        ("Thai", ["th", "th-TH"]),
+        ("Turkish", ["tr"]),
+        ("Ukrainian", ["uk"]),
+        ("Vietnamese", ["vi"]),
+    ]
+
+    nonisolated private static let elevenLabsLanguageGroups: [(String, [String])] = [
+        ("Afrikaans", ["afr"]),
+        ("Amharic", ["amh"]),
+        ("Arabic", ["ara"]),
+        ("Armenian", ["hye"]),
+        ("Assamese", ["asm"]),
+        ("Asturian", ["ast"]),
+        ("Azerbaijani", ["aze"]),
+        ("Belarusian", ["bel"]),
+        ("Bengali", ["ben"]),
+        ("Bosnian", ["bos"]),
+        ("Bulgarian", ["bul"]),
+        ("Burmese", ["mya"]),
+        ("Cantonese", ["yue"]),
+        ("Catalan", ["cat"]),
+        ("Cebuano", ["ceb"]),
+        ("Chichewa", ["nya"]),
+        ("Croatian", ["hrv"]),
+        ("Czech", ["ces"]),
+        ("Danish", ["dan"]),
+        ("Dutch", ["nld"]),
+        ("English", ["eng"]),
+        ("Estonian", ["est"]),
+        ("Filipino", ["fil"]),
+        ("Finnish", ["fin"]),
+        ("French", ["fra"]),
+        ("Fulah", ["ful"]),
+        ("Galician", ["glg"]),
+        ("Ganda", ["lug"]),
+        ("Georgian", ["kat"]),
+        ("German", ["deu"]),
+        ("Greek", ["ell"]),
+        ("Gujarati", ["guj"]),
+        ("Hausa", ["hau"]),
+        ("Hebrew", ["heb"]),
+        ("Hindi", ["hin"]),
+        ("Hungarian", ["hun"]),
+        ("Icelandic", ["isl"]),
+        ("Igbo", ["ibo"]),
+        ("Indonesian", ["ind"]),
+        ("Irish", ["gle"]),
+        ("Italian", ["ita"]),
+        ("Japanese", ["jpn"]),
+        ("Javanese", ["jav"]),
+        ("Kabuverdianu", ["kea"]),
+        ("Kannada", ["kan"]),
+        ("Kazakh", ["kaz"]),
+        ("Khmer", ["khm"]),
+        ("Korean", ["kor"]),
+        ("Kurdish", ["kur"]),
+        ("Kyrgyz", ["kir"]),
+        ("Lao", ["lao"]),
+        ("Latvian", ["lav"]),
+        ("Lingala", ["lin"]),
+        ("Lithuanian", ["lit"]),
+        ("Luo", ["luo"]),
+        ("Luxembourgish", ["ltz"]),
+        ("Macedonian", ["mkd"]),
+        ("Malay", ["msa"]),
+        ("Malayalam", ["mal"]),
+        ("Maltese", ["mlt"]),
+        ("Mandarin Chinese", ["zho"]),
+        ("Maori", ["mri"]),
+        ("Marathi", ["mar"]),
+        ("Mongolian", ["mon"]),
+        ("Nepali", ["nep"]),
+        ("Northern Sotho", ["nso"]),
+        ("Norwegian", ["nor"]),
+        ("Occitan", ["oci"]),
+        ("Odia", ["ori"]),
+        ("Pashto", ["pus"]),
+        ("Persian", ["fas"]),
+        ("Polish", ["pol"]),
+        ("Portuguese", ["por"]),
+        ("Punjabi", ["pan"]),
+        ("Romanian", ["ron"]),
+        ("Russian", ["rus"]),
+        ("Serbian", ["srp"]),
+        ("Shona", ["sna"]),
+        ("Sindhi", ["snd"]),
+        ("Slovak", ["slk"]),
+        ("Slovenian", ["slv"]),
+        ("Somali", ["som"]),
+        ("Spanish", ["spa"]),
+        ("Swahili", ["swa"]),
+        ("Swedish", ["swe"]),
+        ("Tamil", ["tam"]),
+        ("Tajik", ["tgk"]),
+        ("Telugu", ["tel"]),
+        ("Thai", ["tha"]),
+        ("Turkish", ["tur"]),
+        ("Ukrainian", ["ukr"]),
+        ("Umbundu", ["umb"]),
+        ("Urdu", ["urd"]),
+        ("Uzbek", ["uzb"]),
+        ("Vietnamese", ["vie"]),
+        ("Welsh", ["cym"]),
+        ("Wolof", ["wol"]),
+        ("Xhosa", ["xho"]),
+        ("Zulu", ["zul"]),
+    ]
+}
+
 /// Protocol that all transcription providers must implement
 protocol TranscriptionProvider {
     /// Unique identifier for this provider

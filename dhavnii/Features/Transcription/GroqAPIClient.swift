@@ -12,7 +12,9 @@ actor GroqAPIClient: TranscriptionProvider {
     let providerType: TranscriptionProviderType = .groq
     
     private let baseURL = "https://api.groq.com/openai/v1/audio/transcriptions"
-    private let model = "whisper-large-v3"
+    nonisolated private var model: String {
+        providerType.selectedAPIModelID
+    }
     
     nonisolated private var apiKey: String {
         // Prefer user-provided key from Secure Keychain, fall back to env var for dev.

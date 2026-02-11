@@ -12,7 +12,17 @@ actor DeepgramAPIClient: TranscriptionProvider {
     let providerType: TranscriptionProviderType = .deepgram
     
     private let baseURL = "https://api.deepgram.com/v1/listen"
-    private let model = "nova-2" // Deepgram's latest Nova 2 model
+    nonisolated private var model: String {
+        providerType.selectedAPIModelID
+    }
+
+    nonisolated private var language: String {
+        providerType.selectedLanguageID(for: providerType.selectedModelID)
+    }
+
+    nonisolated private var shouldDetectLanguage: Bool {
+        language == TranscriptionLanguageOption.autoID
+    }
     
     nonisolated private var apiKey: String {
         // Prefer user-provided key from Secure Keychain, fall back to env var for dev.
@@ -36,17 +46,27 @@ actor DeepgramAPIClient: TranscriptionProvider {
             throw TranscriptionError.missingAPIKey(provider: "Deepgram")
         }
 
-        print("🎙️ Deepgram STT request: model=\(model) file=\(fileName) bytes=\(audioData.count)")
+        let languageLabel = shouldDetectLanguage ? "auto" : language
+        print(
+            "🎙️ Deepgram STT request: model=\(model) language=\(languageLabel) file=\(fileName) bytes=\(audioData.count)"
+        )
         
         // Build URL with query parameters
         var components = URLComponents(string: baseURL)!
-        components.queryItems = [
+        var queryItems = [
             URLQueryItem(name: "model", value: model),
             URLQueryItem(name: "smart_format", value: "true"),
             URLQueryItem(name: "punctuate", value: "true"),
             URLQueryItem(name: "paragraphs", value: "true"),
-            URLQueryItem(name: "language", value: "en")
         ]
+
+        if shouldDetectLanguage {
+            queryItems.append(URLQueryItem(name: "detect_language", value: "true"))
+        } else {
+            queryItems.append(URLQueryItem(name: "language", value: language))
+        }
+
+        components.queryItems = queryItems
         
         guard let url = components.url else {
             throw TranscriptionError.invalidURL

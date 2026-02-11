@@ -18,6 +18,7 @@ struct OnboardingView: View {
     @State private var currentStep: OnboardingStep = .welcome
     @State private var didAutoAdvance = false
     @State private var didAutoComplete = false
+    @State private var trackedSteps: Set<OnboardingStep> = []
     @State private var apiKeyText = ""
     @State private var isRecordingHotkey = false
     @State private var hotkey = HotkeyDefinition.loadFromDefaults()
@@ -31,6 +32,21 @@ struct OnboardingView: View {
         case apiKey
         case permissions
         case hotkey
+
+        var analyticsStepName: String {
+            switch self {
+            case .welcome:
+                return "welcome"
+            case .provider:
+                return "provider"
+            case .apiKey:
+                return "api_key"
+            case .permissions:
+                return "permissions"
+            case .hotkey:
+                return "hotkey"
+            }
+        }
     }
 
     var body: some View {
@@ -56,6 +72,9 @@ struct OnboardingView: View {
                 }
             }
         }
+        .onAppear {
+            trackCurrentStepIfNeeded(currentStep)
+        }
         .task(id: currentStep) {
             guard currentStep == .welcome, !didAutoAdvance else { return }
             didAutoAdvance = true
@@ -67,6 +86,7 @@ struct OnboardingView: View {
             }
         }
         .onChange(of: currentStep) { _, newValue in
+            trackCurrentStepIfNeeded(newValue)
             if newValue == .hotkey {
                 hotkey = HotkeyDefinition.loadFromDefaults()
             }
@@ -171,7 +191,15 @@ struct OnboardingView: View {
 
     private func finishOnboarding() {
         playChime()
+        AnalyticsManager.shared.trackOnboardingCompleted()
         onComplete()
+    }
+
+    private func trackCurrentStepIfNeeded(_ step: OnboardingStep) {
+        // Track only the four actionable onboarding screens for drop-off analysis.
+        guard step != .welcome, !trackedSteps.contains(step) else { return }
+        trackedSteps.insert(step)
+        AnalyticsManager.shared.trackOnboardingStepViewed(step: step.analyticsStepName)
     }
 
     private func playChime() {
