@@ -93,6 +93,7 @@ actor ElevenLabsAPIClient: TranscriptionProvider {
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append(
             "Content-Disposition: form-data; name=\"tag_audio_events\"\r\n\r\n".data(using: .utf8)!)
+        body.append("true\r\n".data(using: .utf8)!)
 
         // Close boundary
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
