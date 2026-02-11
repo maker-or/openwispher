@@ -319,8 +319,10 @@ private struct ProviderSelectionScreen: View {
                                         .foregroundStyle(.green)
                                 }
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 14)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
 
@@ -371,9 +373,9 @@ private struct ApiKeyScreen: View {
                 .frame(width: 420)
 
                 HStack(spacing: 4) {
-                    Text("Follow the link to create api key?")
+                    Text("Follow the link to create an API Key")
                         .foregroundStyle(.secondary)
-                    Link("Link", destination: providerLink)
+                    Link("Click Here", destination: providerLink)
                         .foregroundStyle(.primary)
                 }
                 .font(.caption)
