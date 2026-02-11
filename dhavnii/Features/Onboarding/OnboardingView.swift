@@ -373,7 +373,7 @@ private struct ApiKeyScreen: View {
                 .frame(width: 420)
 
                 HStack(spacing: 4) {
-                    Text("Follow the link to create api key?")
+                    Text("Follow the link to create an API Key")
                         .foregroundStyle(.secondary)
                     Link("Click Here", destination: providerLink)
                         .foregroundStyle(.primary)

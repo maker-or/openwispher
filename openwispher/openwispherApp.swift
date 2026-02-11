@@ -219,10 +219,12 @@ private struct AppContentView: View {
         hotkeyManager = hotkey
 
         escapeKeyMonitor = EscapeKeyMonitor { [weak service, weak appState] in
-            guard let service, let appState else { return }
-            guard appState.recordingState == .recording else { return }
-            print("⏹️ Escape pressed. Cancelling recording...")
-            service.cancelRecording()
+            Task { @MainActor in
+                guard let service, let appState else { return }
+                guard appState.recordingState == .recording else { return }
+                print("⏹️ Escape pressed. Cancelling recording...")
+                service.cancelRecording()
+            }
         }
         // Update permission state
         appState.hasMicrophonePermission = permissionManager.hasMicrophonePermission
