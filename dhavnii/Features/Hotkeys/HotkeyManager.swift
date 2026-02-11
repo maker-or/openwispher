@@ -46,7 +46,7 @@ internal struct HotkeyDefinition: Equatable {
     internal static func displayString(for hotkey: HotkeyDefinition) -> String {
         let modifierSymbols = modifierSymbols(for: hotkey.modifiers)
         let keyName = keyDisplayName(for: hotkey.keyCode)
-        return modifierSymbols + keyName
+        return modifierSymbols + " + " +  keyName
     }
 
     internal static func modifiersFrom(flags: NSEvent.ModifierFlags) -> UInt32 {
@@ -258,5 +258,52 @@ class HotkeyManager {
     
     deinit {
         stopMonitoring()
+    }
+}
+
+// MARK: - Escape Key Monitor
+
+internal final class EscapeKeyMonitor {
+    private var globalMonitor: Any?
+    private var localMonitor: Any?
+    private let onEscape: () -> Void
+
+    internal init(onEscape: @escaping () -> Void) {
+        self.onEscape = onEscape
+    }
+
+    internal func start() {
+        stop()
+
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.keyCode == UInt16(kVK_Escape) else {
+                return event
+            }
+            self?.onEscape()
+            return nil
+        }
+
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.keyCode == UInt16(kVK_Escape) else { return }
+            DispatchQueue.main.async {
+                self?.onEscape()
+            }
+        }
+    }
+
+    internal func stop() {
+        if let localMonitor {
+            NSEvent.removeMonitor(localMonitor)
+            self.localMonitor = nil
+        }
+
+        if let globalMonitor {
+            NSEvent.removeMonitor(globalMonitor)
+            self.globalMonitor = nil
+        }
+    }
+
+    deinit {
+        stop()
     }
 }

@@ -98,6 +98,7 @@ private struct AppContentView: View {
     @Binding var historyManagerRef: HistoryManager?
     @Binding var transcriptionService: TranscriptionService?
     @Binding var hotkeyManager: HotkeyManager?
+    @State private var escapeKeyMonitor: EscapeKeyMonitor?
     @Binding var notchController: NotchWindowController?
 
     @Environment(\.modelContext) private var modelContext
@@ -157,6 +158,14 @@ private struct AppContentView: View {
                 )
             )
         }
+        .onChange(of: appState.recordingState) { _, newValue in
+            switch newValue {
+            case .recording:
+                escapeKeyMonitor?.start()
+            default:
+                escapeKeyMonitor?.stop()
+            }
+        }
         .withToasts()
     }
 
@@ -209,6 +218,12 @@ private struct AppContentView: View {
         hotkey.startMonitoring()
         hotkeyManager = hotkey
 
+        escapeKeyMonitor = EscapeKeyMonitor { [weak service, weak appState] in
+            guard let service, let appState else { return }
+            guard appState.recordingState == .recording else { return }
+            print("⏹️ Escape pressed. Cancelling recording...")
+            service.cancelRecording()
+        }
         // Update permission state
         appState.hasMicrophonePermission = permissionManager.hasMicrophonePermission
         appState.hasAccessibilityPermission = permissionManager.hasAccessibilityPermission

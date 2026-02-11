@@ -68,6 +68,22 @@ internal class TranscriptionService {
         }
     }
 
+    /// Cancel recording and discard audio without saving
+    internal func cancelRecording() {
+        print("⏹️ TranscriptionService.cancelRecording() called")
+        print("   Current appState.recordingState: \(appState.recordingState)")
+        print("   AudioRecorder.isRecording: \(audioRecorder.isRecording)")
+
+        guard audioRecorder.isRecording else {
+            print("⚠️ cancelRecording() called but audioRecorder.isRecording is false - ignoring")
+            return
+        }
+
+        _ = audioRecorder.stopRecording()
+        audioRecorder.deleteRecording()
+        appState.recordingState = .idle
+    }
+
     /// Process the recorded audio through the selected provider
     private func processTranscription() async {
         defer {
