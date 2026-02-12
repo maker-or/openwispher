@@ -931,6 +931,7 @@ private struct GeneralSettingsView: View {
     @AppStorage("autoLaunchEnabled") private var autoLaunchEnabled = false
     @State private var isRecordingHotkey = false
     @State private var hotkey = HotkeyDefinition.loadFromDefaults()
+    @State private var activationMode = HotkeyActivationMode.loadFromDefaults()
     @State private var isApplyingHotkey = false
 
     var body: some View {
@@ -955,12 +956,41 @@ private struct GeneralSettingsView: View {
                 SettingsGroup(title: "Hotkey") {
                     SettingsRow(
                         icon: "keyboard", title: "Global Shortcut",
-                        subtitle: "Start and stop recording"
+                        subtitle: "Choose shortcut and trigger behavior"
                     ) {
                         HotkeyRecorderControl(
                             hotkey: $hotkey,
                             isRecording: $isRecordingHotkey
                         )
+                    }
+
+                    SettingsRow(
+                        icon: "hand.tap", title: "Activation",
+                        subtitle: "Press toggle or hold to record"
+                    ) {
+                        Menu {
+                            ForEach(HotkeyActivationMode.allCases) { mode in
+                                Button(mode.title) {
+                                    activationMode = mode
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Text(activationMode.title)
+                                    .font(.system(size: 13, weight: .medium))
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .foregroundStyle(.primary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .fill(Color.primary.opacity(0.06))
+                            )
+                        }
+                        .menuStyle(.borderlessButton)
                     }
                 }
 
@@ -1012,9 +1042,13 @@ private struct GeneralSettingsView: View {
         }
         .onAppear {
             hotkey = HotkeyDefinition.loadFromDefaults()
+            activationMode = HotkeyActivationMode.loadFromDefaults()
         }
         .onChange(of: hotkey) { _, newValue in
             applyHotkeyChange(newValue)
+        }
+        .onChange(of: activationMode) { _, newValue in
+            applyActivationModeChange(newValue)
         }
     }
 
@@ -1048,6 +1082,7 @@ private struct GeneralSettingsView: View {
         }
         UserDefaults.standard.removeObject(forKey: HotkeyDefinition.keyCodeDefaultsKey)
         UserDefaults.standard.removeObject(forKey: HotkeyDefinition.modifiersDefaultsKey)
+        UserDefaults.standard.removeObject(forKey: HotkeyActivationMode.defaultsKey)
         UserDefaults.standard.synchronize()
 
         SecureStorage.clearAllAPIKeys()
@@ -1080,6 +1115,13 @@ private struct GeneralSettingsView: View {
             hotkey = fallback
             fallback.saveToDefaults()
         }
+    }
+
+    private func applyActivationModeChange(_ newMode: HotkeyActivationMode) {
+        if let hotkeyManager {
+            hotkeyManager.updateActivationMode(newMode)
+        }
+        newMode.saveToDefaults()
     }
 }
 
