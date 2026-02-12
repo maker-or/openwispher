@@ -310,8 +310,14 @@ class HotkeyManager {
     }
 
     internal func updateActivationMode(_ newMode: HotkeyActivationMode) {
+        if newMode != .hold && (activationMode == .hold || isHoldActive) {
+            if isHoldActive {
+                onHoldEnd()
+            }
+            isHoldActive = false
+        }
+
         activationMode = newMode
-        isHoldActive = false
     }
     
     func stopMonitoring() {

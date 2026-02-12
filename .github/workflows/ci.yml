@@ -4,9 +4,6 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
-  pull_request_target:
-    branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
 
@@ -16,19 +13,16 @@ permissions:
 jobs:
   build-macos:
     name: build-macos
-    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork == true) || github.event_name == 'push' }}
     runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
 
       - name: Build (unsigned)
         env:
-          POSTHOG_API_KEY: ${{ github.event_name == 'pull_request_target' && '' || secrets.POSTHOG_API_KEY }}
-          POSTHOG_HOST: ${{ github.event_name == 'pull_request_target' && '' || secrets.POSTHOG_HOST }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
         run: |
           xcodebuild \
             -project "dhavnii.xcodeproj" \
