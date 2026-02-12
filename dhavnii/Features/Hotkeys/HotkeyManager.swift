@@ -126,6 +126,39 @@ internal struct HotkeyDefinition: Equatable {
     }
 }
 
+internal enum HotkeyActivationMode: String, CaseIterable, Identifiable {
+    internal static let defaultsKey = "hotkeyActivationMode"
+
+    case toggle
+    case hold
+
+    internal var id: String { rawValue }
+
+    internal var title: String {
+        switch self {
+        case .toggle:
+            return "Press to Start/Stop"
+        case .hold:
+            return "Hold to Record"
+        }
+    }
+
+    internal static func loadFromDefaults() -> HotkeyActivationMode {
+        let defaults = UserDefaults.standard
+        guard
+            let rawValue = defaults.string(forKey: defaultsKey),
+            let mode = HotkeyActivationMode(rawValue: rawValue)
+        else {
+            return .toggle
+        }
+        return mode
+    }
+
+    internal func saveToDefaults() {
+        UserDefaults.standard.set(rawValue, forKey: HotkeyActivationMode.defaultsKey)
+    }
+}
+
 /// Manages global hotkey registration using Carbon API for robustness
 /// 
 /// Memory Safety: Uses Unmanaged.passRetained to ensure the instance stays alive
@@ -137,17 +170,33 @@ class HotkeyManager {
     private var lastTriggerTime: Date = .distantPast
     private var selfPointer: UnsafeMutableRawPointer?
     private var hotkeyDefinition: HotkeyDefinition
+    private var activationMode: HotkeyActivationMode
+    private var isHoldActive = false
     
-    // Callback triggered when the hotkey is pressed
-    let onTrigger: () -> Void
+    let onToggle: () -> Void
+    let onHoldStart: () -> Void
+    let onHoldEnd: () -> Void
     
-    init(hotkey: HotkeyDefinition = .defaultHotkey, onTrigger: @escaping () -> Void) {
+    init(
+        hotkey: HotkeyDefinition = .defaultHotkey,
+        activationMode: HotkeyActivationMode = .loadFromDefaults(),
+        onToggle: @escaping () -> Void,
+        onHoldStart: @escaping () -> Void,
+        onHoldEnd: @escaping () -> Void
+    ) {
         self.hotkeyDefinition = hotkey
-        self.onTrigger = onTrigger
+        self.activationMode = activationMode
+        self.onToggle = onToggle
+        self.onHoldStart = onHoldStart
+        self.onHoldEnd = onHoldEnd
     }
     
     internal var currentHotkey: HotkeyDefinition {
         hotkeyDefinition
+    }
+
+    internal var currentActivationMode: HotkeyActivationMode {
+        activationMode
     }
     
     /// Start monitoring for the configured hotkey
@@ -176,37 +225,59 @@ class HotkeyManager {
         }
         
         // Install the event handler
-        var eventType = EventTypeSpec()
-        eventType.eventClass = OSType(kEventClassKeyboard)
-        eventType.eventKind = OSType(kEventHotKeyPressed)
+        var eventTypes = [EventTypeSpec(), EventTypeSpec()]
+        eventTypes[0].eventClass = OSType(kEventClassKeyboard)
+        eventTypes[0].eventKind = OSType(kEventHotKeyPressed)
+        eventTypes[1].eventClass = OSType(kEventClassKeyboard)
+        eventTypes[1].eventKind = OSType(kEventHotKeyReleased)
+        let eventTypeCount = eventTypes.count
         
         // Pass retained 'self' as user data to the callback
         // This ensures the instance stays alive while the handler is installed
         selfPointer = Unmanaged.passRetained(self).toOpaque()
         
-        let handlerStatus = InstallEventHandler(
-            GetApplicationEventTarget(),
-            { (nextHandler, event, userData) -> OSStatus in
-                // Recover the instance - take retained value to balance the passRetained
-                guard let userData = userData else { return noErr }
-                let manager = Unmanaged<HotkeyManager>.fromOpaque(userData).takeUnretainedValue()
-                
-                // Trigger the callback on main thread
-                DispatchQueue.main.async {
-                    // Debounce: Ignore triggers within 0.5 seconds
-                    if Date().timeIntervalSince(manager.lastTriggerTime) > 0.5 {
-                        manager.lastTriggerTime = Date()
-                        manager.onTrigger()
+        let handlerStatus = eventTypes.withUnsafeMutableBufferPointer { buffer -> OSStatus in
+            // Copy the baseAddress out to avoid overlapping access to `eventTypes`
+            let baseAddress = buffer.baseAddress
+            return InstallEventHandler(
+                GetApplicationEventTarget(),
+                { (nextHandler, event, userData) -> OSStatus in
+                    // Recover the instance - take retained value to balance the passRetained
+                    guard let userData = userData else { return noErr }
+                    let manager = Unmanaged<HotkeyManager>.fromOpaque(userData).takeUnretainedValue()
+
+                    guard let event else { return noErr }
+                    let eventKind = GetEventKind(event)
+
+                    DispatchQueue.main.async {
+                        switch manager.activationMode {
+                        case .toggle:
+                            guard eventKind == UInt32(kEventHotKeyPressed) else { return }
+                            if Date().timeIntervalSince(manager.lastTriggerTime) > 0.5 {
+                                manager.lastTriggerTime = Date()
+                                manager.onToggle()
+                            }
+                        case .hold:
+                            if eventKind == UInt32(kEventHotKeyPressed) {
+                                guard !manager.isHoldActive else { return }
+                                manager.isHoldActive = true
+                                manager.onHoldStart()
+                            } else if eventKind == UInt32(kEventHotKeyReleased) {
+                                guard manager.isHoldActive else { return }
+                                manager.isHoldActive = false
+                                manager.onHoldEnd()
+                            }
+                        }
                     }
-                }
-                
-                return noErr
-            },
-            1,
-            &eventType,
-            selfPointer,
-            &eventHandler
-        )
+
+                    return noErr
+                },
+                eventTypeCount,
+                baseAddress,
+                selfPointer,
+                &eventHandler
+            )
+        }
         
         if handlerStatus != noErr {
             print("Failed to install hotkey handler: \(handlerStatus)")
@@ -237,8 +308,15 @@ class HotkeyManager {
         _ = startMonitoring()
         return false
     }
+
+    internal func updateActivationMode(_ newMode: HotkeyActivationMode) {
+        activationMode = newMode
+        isHoldActive = false
+    }
     
     func stopMonitoring() {
+        isHoldActive = false
+
         if let handler = eventHandler {
             RemoveEventHandler(handler)
             eventHandler = nil

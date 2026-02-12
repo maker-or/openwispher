@@ -194,7 +194,8 @@ private struct AppContentView: View {
         let savedHotkey = HotkeyDefinition.loadFromDefaults()
         let hotkey = HotkeyManager(
             hotkey: savedHotkey,
-            onTrigger: { [weak service, weak appState] in
+            activationMode: HotkeyActivationMode.loadFromDefaults(),
+            onToggle: { [weak service, weak appState] in
                 guard let service = service, let appState = appState else {
                     print("❌ Hotkey triggered but service/appState is nil")
                     return
@@ -214,6 +215,25 @@ private struct AppContentView: View {
                 default:
                     print("⚠️ Cannot toggle - state is \(appState.recordingState)")
                 }
+            },
+            onHoldStart: { [weak service, weak appState] in
+                guard let service = service, let appState = appState else { return }
+                guard appState.recordingState == .idle else {
+                    print("⚠️ Cannot start hold recording - state is \(appState.recordingState)")
+                    return
+                }
+                print("▶️ Hold started. Starting recording...")
+                AnalyticsManager.shared.trackHotkeyPressed(hotkey: savedHotkey)
+                service.startRecording()
+            },
+            onHoldEnd: { [weak service, weak appState] in
+                guard let service = service, let appState = appState else { return }
+                guard appState.recordingState == .recording else {
+                    print("⚠️ Hold ended but recording is not active")
+                    return
+                }
+                print("⏹️ Hold released. Stopping recording...")
+                service.stopRecording()
             })
         hotkey.startMonitoring()
         hotkeyManager = hotkey
