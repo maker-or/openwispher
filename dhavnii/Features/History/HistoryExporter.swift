@@ -13,6 +13,18 @@ internal import UniformTypeIdentifiers
 @MainActor
 enum HistoryExporter {
 
+    /// Convenience wrapper: formats, presents the save panel, writes the file,
+    /// and — on success — fires `AnalyticsManager.shared.trackHistoryExported`.
+    /// Returns `true` if the file was written successfully.
+    @discardableResult
+    static func exportAndTrack(_ records: [TranscriptionRecord]) -> Bool {
+        let exported = exportAsText(records)
+        if exported {
+            AnalyticsManager.shared.trackHistoryExported(count: records.count)
+        }
+        return exported
+    }
+
     /// Formats `records` as plain text and presents a save panel to the user.
     /// Returns `true` if the file was written successfully.
     @discardableResult
@@ -68,7 +80,7 @@ enum HistoryExporter {
             return lines.joined(separator: "\n")
         }
 
-        return header + blocks.joined(separator: "\n\n────────────────────────────────────────\n\n")
+        return header + blocks.joined(separator: "\n\n────────────────────────────────────────\n\n") + "\n"
     }
 
     private static func defaultFilename() -> String {

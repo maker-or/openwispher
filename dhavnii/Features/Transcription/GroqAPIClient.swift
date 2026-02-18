@@ -12,8 +12,13 @@ actor GroqAPIClient: TranscriptionProvider {
     let providerType: TranscriptionProviderType = .groq
 
     private let baseURL = "https://api.groq.com/openai/v1/audio/transcriptions"
-    private let systemPrompt =
-        "You are a professional transcriptionist. the make sure that the transcription are formatted correctly. and incase like when the user something like a {let meet at 5 no let make it 5:30} make the transcription is like {let make it 5:30} your purpose is to communicate the semantic meaning of the audio"
+
+    /// Vocabulary and style hints forwarded to Whisper as the `prompt` field.
+    /// Per Groq/Whisper guidance this field influences word choice, capitalization,
+    /// and domain-specific terms only — the model still transcribes verbatim audio.
+    private let transcriptionPrompt =
+        "Preserve the speaker's exact words. Apply standard capitalization and punctuation. Use domain-specific spellings where context is clear (e.g. proper nouns, technical terms)."
+
     nonisolated private var model: String {
         providerType.selectedAPIModelID
     }
@@ -33,8 +38,19 @@ actor GroqAPIClient: TranscriptionProvider {
         // Intentionally empty – `apiKey` is read dynamically.
     }
 
-    /// Transcribe audio data using Whisper
-    func transcribe(audioData: Data, fileName: String = "audio.m4a") async throws -> String {
+    /// Transcribe audio data using Whisper.
+    /// - Parameters:
+    ///   - audioData: Raw audio bytes.
+    ///   - fileName: Filename hint sent in the multipart body (default `"audio.m4a"`).
+    ///   - preserveVerbatim: When `true` (default) the vocabulary/style prompt is
+    ///     omitted, letting Whisper output its raw hypothesis with no additional
+    ///     guidance.  Pass `false` to include the `transcriptionPrompt` hint so
+    ///     Whisper applies the specified vocabulary and formatting preferences.
+    func transcribe(
+        audioData: Data,
+        fileName: String = "audio.m4a",
+        preserveVerbatim: Bool = true
+    ) async throws -> String {
         let key = apiKey
         guard !key.isEmpty else {
             throw TranscriptionError.missingAPIKey(provider: "Groq")
@@ -75,10 +91,12 @@ actor GroqAPIClient: TranscriptionProvider {
         body.append("Content-Disposition: form-data; name=\"language\"\r\n\r\n".data(using: .utf8)!)
         body.append("en\r\n".data(using: .utf8)!)
 
-        // Add system prompt field
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"prompt\"\r\n\r\n".data(using: .utf8)!)
-        body.append("\(systemPrompt)\r\n".data(using: .utf8)!)
+        // Optionally include vocabulary/style hint prompt (opt-in via preserveVerbatim = false)
+        if !preserveVerbatim {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"prompt\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(transcriptionPrompt)\r\n".data(using: .utf8)!)
+        }
 
         // Close boundary
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)

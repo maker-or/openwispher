@@ -336,11 +336,7 @@ struct HomeContentView: View {
     // MARK: - Actions
 
     private func exportHistory() {
-        let records = viewModel.transcriptions
-        let exported = HistoryExporter.exportAsText(records)
-        if exported {
-            AnalyticsManager.shared.trackHistoryExported(count: records.count)
-        }
+        HistoryExporter.exportAndTrack(viewModel.transcriptions)
     }
 
     private func copy(_ record: TranscriptionRecord) {

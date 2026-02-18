@@ -130,15 +130,24 @@ internal enum SecureStorage {
         guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
 
         let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram]
+        var allSucceeded = true
         for provider in providers {
             // Read the existing value (if any) — this may still prompt once
             // during this single migration run, but never again afterwards.
             guard let existingKey = retrieveAPIKey(for: provider), !existingKey.isEmpty else { continue }
             // Re-store with the new accessibility attribute (delete-then-add inside storeAPIKey)
-            try? storeAPIKey(existingKey, for: provider)
+            do {
+                try storeAPIKey(existingKey, for: provider)
+            } catch {
+                print("⚠️ SecureStorage: failed to migrate keychain accessibility for \(provider.rawValue): \(error)")
+                allSucceeded = false
+            }
         }
 
-        UserDefaults.standard.set(true, forKey: migrationKey)
+        // Only mark migration complete if every present key was successfully re-written.
+        if allSucceeded {
+            UserDefaults.standard.set(true, forKey: migrationKey)
+        }
     }
 
     /// Migrate existing UserDefaults keys to Keychain (one-time migration)

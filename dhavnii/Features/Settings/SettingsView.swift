@@ -1133,44 +1133,46 @@ private struct FallbackSettingsCard: View {
             Divider()
                 .padding(.horizontal, 16)
 
-            // Timeout threshold
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Timeout")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                    Text("Fallback kicks in if primary exceeds this time")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.tertiary)
-                }
-
-                Spacer()
-
-                Menu {
-                    ForEach(timeoutOptions, id: \.self) { seconds in
-                        Button("\(Int(seconds))s") {
-                            timeoutSeconds = seconds
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Text(timeoutLabel)
-                            .font(.system(size: 13, weight: .medium))
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.system(size: 10))
+            // Timeout threshold — only relevant when a fallback provider is selected
+            if !fallbackRaw.isEmpty {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Timeout")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                        Text("Fallback kicks in if primary exceeds this time")
+                            .font(.system(size: 11))
                             .foregroundStyle(.tertiary)
                     }
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(Color.primary.opacity(0.06))
-                    )
+
+                    Spacer()
+
+                    Menu {
+                        ForEach(timeoutOptions, id: \.self) { seconds in
+                            Button("\(Int(seconds))s") {
+                                timeoutSeconds = seconds
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(timeoutLabel)
+                                .font(.system(size: 13, weight: .medium))
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.tertiary)
+                        }
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color.primary.opacity(0.06))
+                        )
+                    }
+                    .menuStyle(.borderlessButton)
                 }
-                .menuStyle(.borderlessButton)
+                .padding(16)
             }
-            .padding(16)
         }
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -1211,10 +1213,15 @@ private struct FallbackSettingsCard: View {
         guard !apiKeyText.isEmpty,
               let type = TranscriptionProviderType(rawValue: fallbackRaw)
         else { return }
-        try? SecureStorage.storeAPIKey(apiKeyText, for: type)
-        isEditingKey = false
-        fallbackHasKey = true
-        apiKeyText = ""
+        do {
+            try SecureStorage.storeAPIKey(apiKeyText, for: type)
+            isEditingKey = false
+            fallbackHasKey = true
+            apiKeyText = ""
+        } catch {
+            print("❌ FallbackSettingsCard: failed to store API key for \(type.rawValue): \(error)")
+            // Leave isEditingKey = true so the UI reflects the failed write.
+        }
     }
 
     private func removeFallbackKey() {
@@ -1379,6 +1386,8 @@ private struct GeneralSettingsView: View {
         UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
         UserDefaults.standard.removeObject(forKey: "autoLaunchEnabled")
         UserDefaults.standard.removeObject(forKey: "selectedTranscriptionProvider")
+        UserDefaults.standard.removeObject(forKey: "fallbackTranscriptionProvider")
+        UserDefaults.standard.removeObject(forKey: "transcriptionTimeoutSeconds")
         for provider in TranscriptionProviderType.allCases {
             UserDefaults.standard.removeObject(forKey: provider.modelUserDefaultsKey)
             UserDefaults.standard.removeObject(forKey: provider.languageUserDefaultsKey)
@@ -1495,10 +1504,7 @@ private struct HistorySettingsView: View {
                     ) {
                         Button("Export") {
                             let records = historyManager?.fetchAllTranscriptions() ?? []
-                            let exported = HistoryExporter.exportAsText(records)
-                            if exported {
-                                AnalyticsManager.shared.trackHistoryExported(count: records.count)
-                            }
+                            HistoryExporter.exportAndTrack(records)
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.small)

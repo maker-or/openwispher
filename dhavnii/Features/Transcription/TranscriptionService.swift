@@ -111,7 +111,7 @@ internal class TranscriptionService {
 
         // Re-read the primary provider live from UserDefaults so that changes made
         // in Settings are reflected without restarting the app.
-        let primary = liveSelectedProvider()
+        let primary = refreshSelectedProvider()
         let fallback = TranscriptionProviderType.savedFallbackProvider
         let timeoutSeconds = TranscriptionProviderType.savedTimeoutSeconds
 
@@ -125,12 +125,21 @@ internal class TranscriptionService {
                 audioData: audioData,
                 timeoutSeconds: timeoutSeconds
             )
-            try await deliver(transcription: transcription, provider: primary)
+            await deliver(transcription: transcription, provider: primary)
         } catch let primaryError {
             print("⚠️ Primary provider \(primary.rawValue) failed: \(primaryError)")
 
-            // Determine whether to try the fallback
-            let eligibleForFallback = (primaryError as? TranscriptionError)?.shouldTryFallback ?? true
+            // Determine whether to try the fallback.
+            // Unknown/unexpected errors default to NOT retrying (false) to avoid
+            // silently swallowing errors that are not transient provider failures.
+            // CancellationError is explicitly excluded — a cancelled task must not
+            // trigger a fallback attempt.
+            let eligibleForFallback: Bool
+            if primaryError is CancellationError {
+                eligibleForFallback = false
+            } else {
+                eligibleForFallback = (primaryError as? TranscriptionError)?.shouldTryFallback ?? false
+            }
 
             if eligibleForFallback, let fallback, fallback != primary {
                 print("🔄 Trying fallback provider: \(fallback.rawValue)")
@@ -146,7 +155,7 @@ internal class TranscriptionService {
                         fallback: fallback,
                         reason: (primaryError as? TranscriptionError)?.analyticsReason ?? "unknown"
                     )
-                    try await deliver(transcription: transcription, provider: fallback)
+                    await deliver(transcription: transcription, provider: fallback)
                 } catch let fallbackError {
                     print("❌ Fallback provider \(fallback.rawValue) also failed: \(fallbackError)")
                     surfaceError(fallbackError)
@@ -196,7 +205,7 @@ internal class TranscriptionService {
     // MARK: - Delivery
 
     /// Validates the transcription text, copies it to clipboard, saves to history, updates state.
-    private func deliver(transcription: String, provider: TranscriptionProviderType) async throws {
+    private func deliver(transcription: String, provider: TranscriptionProviderType) async {
         guard !transcription.isEmpty else {
             appState.recordingState = .error(message: "Empty result")
             FeedbackManager.shared.showEmptyRecordingWarning()
@@ -235,8 +244,10 @@ internal class TranscriptionService {
         }
     }
 
-    /// Reads the primary provider live from UserDefaults, falling back to the injected value.
-    private func liveSelectedProvider() -> TranscriptionProviderType {
+    /// Reads the primary provider live from UserDefaults and updates `selectedProvider`
+    /// as a side effect so in-memory state stays consistent with persisted settings.
+    @discardableResult
+    private func refreshSelectedProvider() -> TranscriptionProviderType {
         guard
             let raw = UserDefaults.standard.string(
                 forKey: "selectedTranscriptionProvider"),

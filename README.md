@@ -78,7 +78,7 @@ API keys are stored securely in the macOS Keychain. During development, you can 
 
 ## Project Structure
 
-```
+```text
 dhavnii/
 ├── .github/
 │   └── workflows/
@@ -130,7 +130,7 @@ dhavnii/
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/<your-org>/dhavnii.git
+git clone https://github.com/maker-or/openwispher.git
 cd dhavnii
 ```
 
@@ -146,7 +146,7 @@ Select the **openwispher** scheme and your Mac as the destination.
 
 You can supply keys via environment variables so you don't have to go through onboarding on every run. In Xcode, edit the scheme (`Product → Scheme → Edit Scheme → Run → Arguments`) and add:
 
-```
+```text
 GROQ_API_KEY=<your key>
 DEEPGRAM_API_KEY=<your key>
 ELEVENLABS_API_KEY=<your key>
