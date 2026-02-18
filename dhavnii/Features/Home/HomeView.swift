@@ -191,6 +191,9 @@ struct HomeContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
+            if !viewModel.transcriptions.isEmpty {
+                exportToolbar
+            }
 
             // Content
             if viewModel.transcriptions.isEmpty {
@@ -213,6 +216,36 @@ struct HomeContentView: View {
                 viewModel.refreshIfNeeded(force: true)
             }
         }
+    }
+
+    // MARK: - Export Toolbar
+
+    private var exportToolbar: some View {
+        HStack {
+            Text("Transcriptions")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
+
+            Spacer()
+
+            Button {
+                exportHistory()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 12, weight: .medium))
+                    Text("Export")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("Export all transcriptions to a text file")
+            .accessibilityLabel("Export transcriptions")
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial.opacity(0.5))
     }
 
     // MARK: - Header
@@ -301,6 +334,14 @@ struct HomeContentView: View {
     }
 
     // MARK: - Actions
+
+    private func exportHistory() {
+        let records = viewModel.transcriptions
+        let exported = HistoryExporter.exportAsText(records)
+        if exported {
+            AnalyticsManager.shared.trackHistoryExported(count: records.count)
+        }
+    }
 
     private func copy(_ record: TranscriptionRecord) {
         NSPasteboard.general.clearContents()

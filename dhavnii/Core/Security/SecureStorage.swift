@@ -45,7 +45,9 @@ internal enum SecureStorage {
             kSecAttrAccount as String: key,
             kSecAttrService as String: "openwispher_api_keys",
             kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            // AfterFirstUnlock: accessible after the user logs in once per boot,
+            // without prompting for the system password on every app launch.
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         ]
         
         let status = SecItemAdd(query as CFDictionary, nil)
@@ -120,6 +122,25 @@ internal enum SecureStorage {
     }
 
     
+    /// Re-write any existing keychain items to use the AfterFirstUnlock accessibility level.
+    /// Run once on launch to silently upgrade keys stored under the old WhenUnlocked attribute,
+    /// which caused a system-password prompt on every fresh app launch.
+    internal static func migrateKeychainAccessibility() {
+        let migrationKey = "com.openwispher.keychainAccessibilityMigrated.v1"
+        guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
+
+        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram]
+        for provider in providers {
+            // Read the existing value (if any) — this may still prompt once
+            // during this single migration run, but never again afterwards.
+            guard let existingKey = retrieveAPIKey(for: provider), !existingKey.isEmpty else { continue }
+            // Re-store with the new accessibility attribute (delete-then-add inside storeAPIKey)
+            try? storeAPIKey(existingKey, for: provider)
+        }
+
+        UserDefaults.standard.set(true, forKey: migrationKey)
+    }
+
     /// Migrate existing UserDefaults keys to Keychain (one-time migration)
     internal static func migrateFromUserDefaults() {
         let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram]

@@ -54,6 +54,33 @@ struct TranscriptionLanguageOption: Identifiable, Hashable {
 }
 
 extension TranscriptionProviderType {
+    // MARK: - Fallback & timeout UserDefaults keys
+
+    /// UserDefaults key that stores the raw value of the fallback provider ("" = disabled).
+    nonisolated static let fallbackProviderDefaultsKey = "fallbackTranscriptionProvider"
+
+    /// UserDefaults key that stores the per-attempt timeout in seconds (Double).
+    nonisolated static let timeoutSecondsDefaultsKey = "transcriptionTimeoutSeconds"
+
+    /// Default timeout before falling back to the secondary provider (seconds).
+    nonisolated static let defaultTimeoutSeconds: Double = 8
+
+    /// The currently saved fallback provider, or nil when disabled.
+    nonisolated static var savedFallbackProvider: TranscriptionProviderType? {
+        guard let raw = UserDefaults.standard.string(forKey: fallbackProviderDefaultsKey),
+              !raw.isEmpty
+        else { return nil }
+        return TranscriptionProviderType(rawValue: raw)
+    }
+
+    /// The currently saved timeout (seconds). Falls back to the default if unset.
+    nonisolated static var savedTimeoutSeconds: Double {
+        let stored = UserDefaults.standard.double(forKey: timeoutSecondsDefaultsKey)
+        return stored > 0 ? stored : defaultTimeoutSeconds
+    }
+
+    // MARK: - Existing keys (model / language)
+
     nonisolated var modelUserDefaultsKey: String {
         switch self {
         case .groq:
@@ -476,7 +503,9 @@ enum TranscriptionError: Error, LocalizedError {
     case networkError(Error)
     case decodingError(Error)
     case providerNotConfigured
-    
+    /// The request did not complete within the configured timeout interval.
+    case timeout(provider: String)
+
     var errorDescription: String? {
         switch self {
         case .missingAPIKey(let provider):
@@ -495,6 +524,20 @@ enum TranscriptionError: Error, LocalizedError {
             return "Failed to parse response: \(error.localizedDescription)"
         case .providerNotConfigured:
             return "Transcription provider not properly configured"
+        case .timeout(let provider):
+            return "\(provider) did not respond in time"
+        }
+    }
+
+    /// Returns true for errors where retrying with a different provider is worthwhile.
+    var shouldTryFallback: Bool {
+        switch self {
+        case .timeout: return true
+        case .apiError(let statusCode, _): return statusCode == 429 || statusCode >= 500
+        case .networkError: return true
+        case .missingAPIKey: return false
+        case .emptyTranscription: return false
+        case .invalidURL, .invalidResponse, .decodingError, .providerNotConfigured: return false
         }
     }
 }
