@@ -51,7 +51,6 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-
             stepContent
                 .padding(.horizontal, 32)
                 .transition(.opacity.combined(with: .scale(scale: 0.98)))
@@ -59,6 +58,9 @@ struct OnboardingView: View {
         .frame(
             width: UIConstants.Window.onboardingWidth, height: UIConstants.Window.onboardingHeight
         )
+        .background(WindowConfigurator())
+        .seamlessToolbarWindowBackground()
+        .preferredColorScheme(.dark)
 
         .task {
             // Initial check
@@ -108,21 +110,6 @@ struct OnboardingView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: currentStep)
-    }
-
-    // MARK: - Background
-
-    private var onboardingBackground: some View {
-        RadialGradient(
-            colors: [
-                Color(red: 0.18, green: 0.18, blue: 0.19),
-                Color(red: 0.12, green: 0.12, blue: 0.13),
-            ],
-            center: .center,
-            startRadius: 0,
-            endRadius: 520
-        )
-        .ignoresSafeArea()
     }
 
     // MARK: - Step Content
@@ -518,10 +505,13 @@ private struct PermissionsCard<Content: View>: View {
     var body: some View {
         content
             .frame(maxWidth: .infinity)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22))
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Color.white.opacity(0.08))
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 22)
-                    .stroke(.primary.opacity(0.08), lineWidth: 0.5)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
             )
     }
 }
@@ -536,10 +526,13 @@ private struct OnboardingPanel<Content: View>: View {
     var body: some View {
         content
             .frame(maxWidth: .infinity)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22))
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Color.white.opacity(0.08))
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 22)
-                    .stroke(.primary.opacity(0.08), lineWidth: 0.5)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
             )
     }
 }
@@ -691,7 +684,8 @@ private final class HotkeyRecorderNSView: NSView {
         }
 
         let modifierFlags = event.modifierFlags
-        let hasModifiers = modifierFlags.contains(.command)
+        let hasModifiers =
+            modifierFlags.contains(.command)
             || modifierFlags.contains(.option)
             || modifierFlags.contains(.control)
             || modifierFlags.contains(.shift)

@@ -40,34 +40,8 @@ internal struct SettingsView: View {
             }
         }
 
-        var iconGradient: [Color] {
-            switch self {
-            case .permissions:
-                return [
-                    Color(red: 0.20, green: 0.78, blue: 0.55),
-                    Color(red: 0.08, green: 0.55, blue: 0.45),
-                ]
-            case .providers:
-                return [
-                    Color(red: 0.25, green: 0.62, blue: 0.98),
-                    Color(red: 0.10, green: 0.42, blue: 0.90),
-                ]
-            case .general:
-                return [
-                    Color(red: 0.98, green: 0.63, blue: 0.24),
-                    Color(red: 0.92, green: 0.42, blue: 0.20),
-                ]
-            case .history:
-                return [
-                    Color(red: 0.56, green: 0.45, blue: 0.98),
-                    Color(red: 0.35, green: 0.30, blue: 0.88),
-                ]
-            case .about:
-                return [
-                    Color(red: 0.94, green: 0.38, blue: 0.58),
-                    Color(red: 0.84, green: 0.22, blue: 0.44),
-                ]
-            }
+        var iconColor: Color {
+            Color.white.opacity(0.15)
         }
     }
 
@@ -80,6 +54,7 @@ internal struct SettingsView: View {
         }
         .frame(minWidth: 750, minHeight: 550)
         .background(WindowConfigurator())
+        .liquidGlassWindowBackground()
         .seamlessToolbarWindowBackground()
         .preferredColorScheme(.dark)
     }
@@ -138,7 +113,7 @@ internal struct SettingsView: View {
 
     private func settingsSidebarItem(for section: SettingsSection) -> some View {
         HStack(spacing: 10) {
-            SidebarIconTile(systemName: section.icon, colors: section.iconGradient)
+            SidebarIconTile(systemName: section.icon, color: section.iconColor)
 
             Text(section.rawValue)
                 .font(.system(size: 13, weight: .medium))
@@ -260,7 +235,7 @@ private struct SettingsRow<Content: View>: View {
         .padding(.horizontal, 16)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.primary.opacity(0.03))
+                .fill(Color.primary.opacity(0.04))
         )
     }
 }
@@ -291,11 +266,11 @@ private struct SettingsGroup<Content: View>: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.primary.opacity(0.02))
+                    .fill(Color.white.opacity(0.08))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
             )
         }
     }
@@ -465,11 +440,11 @@ private struct PermissionRow: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.primary.opacity(0.02))
+                .fill(.regularMaterial)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
+                .stroke(Color.primary.opacity(0.10), lineWidth: 0.5)
         )
     }
 }
@@ -861,11 +836,11 @@ private struct ProviderCard: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.primary.opacity(0.02))
+                .fill(.regularMaterial)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
+                .stroke(Color.primary.opacity(0.10), lineWidth: 0.5)
         )
         .onAppear { checkKey() }
         .onAppear {
@@ -1177,11 +1152,11 @@ private struct FallbackSettingsCard: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.primary.opacity(0.02))
+                .fill(.regularMaterial)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
+                .stroke(Color.primary.opacity(0.10), lineWidth: 0.5)
         )
         .onAppear {
             checkFallbackKey()
@@ -1620,11 +1595,11 @@ private struct AboutSettingsView: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.primary.opacity(0.02))
+                    .fill(Color.white.opacity(0.08))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
             )
             .padding(.horizontal, 60)
             Spacer()

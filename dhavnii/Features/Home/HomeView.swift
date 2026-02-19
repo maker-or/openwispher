@@ -61,6 +61,9 @@ struct HomeView: View {
             detailContent
         }
         .frame(minWidth: 700, minHeight: 500)
+        .background(WindowConfigurator())
+        .liquidGlassWindowBackground()
+        .seamlessToolbarWindowBackground()
         .preferredColorScheme(.dark)
     }
 
@@ -112,7 +115,7 @@ struct HomeView: View {
                         .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.primary.opacity(0.05))
+                                .fill(.regularMaterial)
                         )
                     }
                     .buttonStyle(.plain)
@@ -224,7 +227,7 @@ struct HomeContentView: View {
         HStack {
             Text("Transcriptions")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.clear)
 
             Spacer()
 
@@ -393,16 +396,16 @@ private struct TranscriptionRow: View {
 
                 Spacer()
             }
-            .opacity(isHovered ? 1 : 0.6)
+            // .opacity(isHovered ? 1 : 0.6)
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.primary.opacity(isHovered ? 0.05 : 0))
-        )
-        .animation(.easeInOut(duration: 0.15), value: isHovered)
-        .contentShape(Rectangle())
+        // .background(
+        //     RoundedRectangle(cornerRadius: 8, style: .continuous)
+        //         .fill(Color.primary.opacity(isHovered ? 0.05 : 0))
+        // )
+        // .animation(.easeInOut(duration: 0.15), value: isHovered)
+        // .contentShape(Rectangle())
     }
 }
 
