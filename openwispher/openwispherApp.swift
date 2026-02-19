@@ -288,8 +288,8 @@ private struct AppContentView: View {
         appState.hasCompletedOnboarding = hasCompleted
 
         if hasCompleted {
-            // Migrate existing keychain items to AfterFirstUnlock accessibility (one-time, silent).
-            // This also warms up the in-memory cache for all providers, so no extra read is needed.
+            // Mark legacy migration as completed without touching keychain items on launch.
+            // Startup keychain scans were causing repeated password prompts.
             SecureStorage.migrateKeychainAccessibility()
         }
 

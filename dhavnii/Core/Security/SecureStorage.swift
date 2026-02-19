@@ -41,26 +41,6 @@ internal enum SecureStorage {
             throw KeychainError.conversionFailed
         }
 
-        // Create an Access object with no trusted-application list.
-        //
-        // When a keychain item is stored WITHOUT an explicit SecAccess, macOS
-        // automatically creates an ACL tied to the storing app's code signature.
-        // For an unsigned (or ad-hoc-signed) app this means every new build gets
-        // a different signature, and macOS prompts the user for their system
-        // password on every launch because it sees a "different" app trying to
-        // read the item.
-        //
-        // Passing a SecAccess with an empty trusted-application array and the
-        // kSecACLAuthorizationAny flag tells the keychain to allow any
-        // application to read this item without prompting.  This is the correct
-        // approach for unsigned, non-sandboxed apps that distribute outside the
-        // Mac App Store.
-        var access: SecAccess?
-        let accessStatus = SecAccessCreate("openwispher_api_keys" as CFString, [] as CFArray, &access)
-        guard accessStatus == errSecSuccess, let secAccess = access else {
-            throw KeychainError.invalidStatus(accessStatus)
-        }
-
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
@@ -68,8 +48,7 @@ internal enum SecureStorage {
             kSecValueData as String: data,
             // AfterFirstUnlock: accessible after the user logs in once per boot,
             // without prompting for the system password on every app launch.
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
-            kSecAttrAccess as String: secAccess
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         ]
         
         let status = SecItemAdd(query as CFDictionary, nil)
@@ -144,32 +123,15 @@ internal enum SecureStorage {
     }
 
     
-    /// Re-write any existing keychain items to use the AfterFirstUnlock accessibility level.
-    /// Run once on launch to silently upgrade keys stored under the old WhenUnlocked attribute,
-    /// which caused a system-password prompt on every fresh app launch.
+    /// Legacy migration entry point kept for compatibility.
+    ///
+    /// Earlier versions attempted to migrate all providers on startup, which could trigger
+    /// repeated system-password prompts for each key. We now avoid any keychain I/O here and
+    /// only mark migration as completed.
     internal static func migrateKeychainAccessibility() {
         let migrationKey = "com.openwispher.keychainAccessibilityMigrated.v1"
         guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
-
-        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram, .sarvam]
-        var allSucceeded = true
-        for provider in providers {
-            // Read the existing value (if any) — this may still prompt once
-            // during this single migration run, but never again afterwards.
-            guard let existingKey = retrieveAPIKey(for: provider), !existingKey.isEmpty else { continue }
-            // Re-store with the new accessibility attribute (delete-then-add inside storeAPIKey)
-            do {
-                try storeAPIKey(existingKey, for: provider)
-            } catch {
-                print("⚠️ SecureStorage: failed to migrate keychain accessibility for \(provider.rawValue): \(error)")
-                allSucceeded = false
-            }
-        }
-
-        // Only mark migration complete if every present key was successfully re-written.
-        if allSucceeded {
-            UserDefaults.standard.set(true, forKey: migrationKey)
-        }
+        UserDefaults.standard.set(true, forKey: migrationKey)
     }
 
     /// Migrate existing UserDefaults keys to Keychain (one-time migration)
