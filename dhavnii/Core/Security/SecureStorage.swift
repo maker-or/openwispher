@@ -18,6 +18,7 @@ internal enum SecureStorage {
     private static let groqAPIKey = "com.openwispher.apiKeys.groq"
     private static let elevenLabsAPIKey = "com.openwispher.apiKeys.elevenlabs"
     private static let deepgramAPIKey = "com.openwispher.apiKeys.deepgram"
+    private static let sarvamAPIKey = "com.openwispher.apiKeys.sarvam"
     
     // MARK: - Error Types
     internal enum KeychainError: Error {
@@ -45,7 +46,9 @@ internal enum SecureStorage {
             kSecAttrAccount as String: key,
             kSecAttrService as String: "openwispher_api_keys",
             kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            // AfterFirstUnlock: accessible after the user logs in once per boot,
+            // without prompting for the system password on every app launch.
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         ]
         
         let status = SecItemAdd(query as CFDictionary, nil)
@@ -120,9 +123,37 @@ internal enum SecureStorage {
     }
 
     
+    /// Re-write any existing keychain items to use the AfterFirstUnlock accessibility level.
+    /// Run once on launch to silently upgrade keys stored under the old WhenUnlocked attribute,
+    /// which caused a system-password prompt on every fresh app launch.
+    internal static func migrateKeychainAccessibility() {
+        let migrationKey = "com.openwispher.keychainAccessibilityMigrated.v1"
+        guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
+
+        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram, .sarvam]
+        var allSucceeded = true
+        for provider in providers {
+            // Read the existing value (if any) — this may still prompt once
+            // during this single migration run, but never again afterwards.
+            guard let existingKey = retrieveAPIKey(for: provider), !existingKey.isEmpty else { continue }
+            // Re-store with the new accessibility attribute (delete-then-add inside storeAPIKey)
+            do {
+                try storeAPIKey(existingKey, for: provider)
+            } catch {
+                print("⚠️ SecureStorage: failed to migrate keychain accessibility for \(provider.rawValue): \(error)")
+                allSucceeded = false
+            }
+        }
+
+        // Only mark migration complete if every present key was successfully re-written.
+        if allSucceeded {
+            UserDefaults.standard.set(true, forKey: migrationKey)
+        }
+    }
+
     /// Migrate existing UserDefaults keys to Keychain (one-time migration)
     internal static func migrateFromUserDefaults() {
-        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram]
+        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram, .sarvam]
         
         for provider in providers {
             let userDefaultsKey: String
@@ -133,6 +164,8 @@ internal enum SecureStorage {
                 userDefaultsKey = "elevenLabsAPIKey"
             case .deepgram:
                 userDefaultsKey = "deepgramAPIKey"
+            case .sarvam:
+                userDefaultsKey = "sarvamAPIKey"
             }
             
             // Check if already in keychain
@@ -156,7 +189,7 @@ internal enum SecureStorage {
     
     /// Clear all stored API keys
     internal static func clearAllAPIKeys() {
-        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram]
+        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram, .sarvam]
         
         for provider in providers {
             try? deleteAPIKey(for: provider)
@@ -166,6 +199,7 @@ internal enum SecureStorage {
         UserDefaults.standard.removeObject(forKey: "groqAPIKey")
         UserDefaults.standard.removeObject(forKey: "elevenLabsAPIKey")
         UserDefaults.standard.removeObject(forKey: "deepgramAPIKey")
+        UserDefaults.standard.removeObject(forKey: "sarvamAPIKey")
     }
     
     // MARK: - Private Helpers
@@ -178,6 +212,8 @@ internal enum SecureStorage {
             return elevenLabsAPIKey
         case .deepgram:
             return deepgramAPIKey
+        case .sarvam:
+            return sarvamAPIKey
         }
     }
 

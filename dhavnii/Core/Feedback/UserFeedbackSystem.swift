@@ -368,6 +368,8 @@ internal extension Error {
                 return "Failed to parse response. Please try again."
             case .providerNotConfigured:
                 return "Transcription provider not configured. Please check your settings."
+            case .timeout(provider: let provider):
+                return "\(provider) took too long to respond. Please try again."
             }
         }
         return localizedDescription

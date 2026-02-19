@@ -125,7 +125,7 @@ struct HomeView: View {
             }
         }
         .frame(minWidth: 220)
-        .background(.ultraThinMaterial)
+
     }
 
     private func sidebarItem(for section: SidebarSection) -> some View {
@@ -175,7 +175,7 @@ struct HomeView: View {
 
     private var detailContent: some View {
         HomeContentView(viewModel: homeViewModel, appState: appState)
-            .background(.ultraThinMaterial.opacity(0.3))
+
     }
 }
 
@@ -191,6 +191,9 @@ struct HomeContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
+            if !viewModel.transcriptions.isEmpty {
+                exportToolbar
+            }
 
             // Content
             if viewModel.transcriptions.isEmpty {
@@ -215,24 +218,34 @@ struct HomeContentView: View {
         }
     }
 
-    // MARK: - Header
+    // MARK: - Export Toolbar
 
-    private var contentHeader: some View {
+    private var exportToolbar: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Home")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+            Text("Transcriptions")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
 
             Spacer()
+
+            Button {
+                exportHistory()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 12, weight: .medium))
+                    Text("Export")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("Export all transcriptions to a text file")
+            .accessibilityLabel("Export transcriptions")
         }
         .padding(.horizontal, 24)
-        .padding(.vertical, 16)
-        .background(.ultraThinMaterial.opacity(0.5))
+        .padding(.vertical, 10)
+
     }
 
     // MARK: - Empty State
@@ -301,6 +314,10 @@ struct HomeContentView: View {
     }
 
     // MARK: - Actions
+
+    private func exportHistory() {
+        HistoryExporter.exportAndTrack(viewModel.transcriptions)
+    }
 
     private func copy(_ record: TranscriptionRecord) {
         NSPasteboard.general.clearContents()

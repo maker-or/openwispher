@@ -76,7 +76,7 @@ internal struct SettingsView: View {
             sidebarContent
         } detail: {
             detailView
-                .background(.ultraThinMaterial.opacity(0.3))
+
         }
         .frame(minWidth: 750, minHeight: 550)
         .background(WindowConfigurator())
@@ -133,7 +133,7 @@ internal struct SettingsView: View {
             // }
         }
         .frame(minWidth: 220)
-        .background(.ultraThinMaterial)
+
     }
 
     private func settingsSidebarItem(for section: SettingsSection) -> some View {
@@ -541,7 +541,8 @@ private struct ProvidersSettingsView: View {
                             return
                         }
                         let resolvedLanguage = type.resolveLanguageID(language, modelID: model)
-                        UserDefaults.standard.set(resolvedLanguage, forKey: type.languageUserDefaultsKey)
+                        UserDefaults.standard.set(
+                            resolvedLanguage, forKey: type.languageUserDefaultsKey)
                     },
                     getAPIKey: { provider in
                         guard let type = TranscriptionProviderType(rawValue: provider) else {
@@ -567,6 +568,8 @@ private struct ProvidersSettingsView: View {
                     }
                 )
 
+                // Fallback & timeout
+                FallbackSettingsCard(primaryProviderRaw: selectedProviderRaw)
             }
         }
     }
@@ -921,6 +924,319 @@ private struct ProviderCard: View {
     }
 }
 
+// MARK: - Fallback Settings Card
+
+private struct FallbackSettingsCard: View {
+    /// The raw value of the currently selected primary provider (passed from ProvidersSettingsView).
+    let primaryProviderRaw: String
+
+    @AppStorage("fallbackTranscriptionProvider") private var fallbackRaw = ""
+    @AppStorage("transcriptionTimeoutSeconds") private var timeoutSeconds = 8.0
+
+    // API key entry state
+    @State private var fallbackHasKey = false
+    @State private var isEditingKey = false
+    @State private var apiKeyText = ""
+
+    private let timeoutOptions: [Double] = [5, 8, 10, 15, 20, 30]
+
+    // Providers that can be selected as fallback (excludes the primary)
+    private var fallbackOptions: [(id: String, name: String)] {
+        TranscriptionProviderType.allCases
+            .filter { $0.rawValue != primaryProviderRaw }
+            .map { ($0.rawValue, $0.displayName) }
+    }
+
+    private var fallbackName: String {
+        guard !fallbackRaw.isEmpty,
+            let type = TranscriptionProviderType(rawValue: fallbackRaw)
+        else { return "None" }
+        return type.displayName
+    }
+
+    private var timeoutLabel: String {
+        let t = Int(timeoutSeconds)
+        return "\(t)s"
+    }
+
+    /// True when a fallback provider is chosen but has no API key stored.
+    private var fallbackNeedsKey: Bool {
+        !fallbackRaw.isEmpty && !fallbackHasKey
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack(spacing: 12) {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .font(.system(size: 16))
+                    .foregroundStyle(.secondary)
+
+                Text("Fallback")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+            }
+            .padding(16)
+
+            Divider()
+                .padding(.horizontal, 16)
+
+            // Fallback provider
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Fallback Provider")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                    Text("Used when primary fails, times out, or is rate-limited")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
+
+                Spacer()
+
+                Menu {
+                    Button("None") {
+                        fallbackRaw = ""
+                        isEditingKey = false
+                        apiKeyText = ""
+                        checkFallbackKey()
+                    }
+                    Divider()
+                    ForEach(fallbackOptions, id: \.id) { option in
+                        Button(option.name) {
+                            fallbackRaw = option.id
+                            isEditingKey = false
+                            apiKeyText = ""
+                            checkFallbackKey()
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(fallbackName)
+                            .font(.system(size: 13, weight: .medium))
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(Color.primary.opacity(0.06))
+                    )
+                }
+                .menuStyle(.borderlessButton)
+            }
+            .padding(16)
+
+            // API key warning / entry (only when a fallback is selected)
+            if !fallbackRaw.isEmpty {
+                Divider()
+                    .padding(.horizontal, 16)
+
+                if isEditingKey {
+                    // Inline key entry
+                    VStack(spacing: 12) {
+                        SecureField("Enter API Key for \(fallbackName)", text: $apiKeyText)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 13, design: .monospaced))
+                            .padding(10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .fill(Color.primary.opacity(0.04))
+                            )
+
+                        HStack {
+                            Button("Cancel") {
+                                isEditingKey = false
+                                apiKeyText = ""
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+
+                            Spacer()
+
+                            Button("Save") {
+                                saveFallbackKey()
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+                            .disabled(apiKeyText.isEmpty)
+                        }
+                    }
+                    .padding(16)
+                } else if fallbackNeedsKey {
+                    // Missing key warning
+                    HStack(spacing: 10) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.orange)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("API key required")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(.orange)
+                            Text("\(fallbackName) needs an API key to work as a fallback.")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Button("Add Key") {
+                            isEditingKey = true
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                    }
+                    .padding(16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color.orange.opacity(0.06))
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                } else {
+                    // Key is configured — show status with option to update/remove
+                    HStack {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.green)
+                            Text("API key configured for \(fallbackName)")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Menu {
+                            Button("Update Key") {
+                                isEditingKey = true
+                            }
+                            Button("Remove Key", role: .destructive) {
+                                removeFallbackKey()
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                                .font(.system(size: 16))
+                                .foregroundStyle(.secondary)
+                        }
+                        .menuStyle(.borderlessButton)
+                    }
+                    .padding(16)
+                }
+            }
+
+            // Timeout threshold — only relevant when a fallback provider is selected
+            if !fallbackRaw.isEmpty {
+                Divider()
+                    .padding(.horizontal, 16)
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Timeout")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                        Text("Fallback kicks in if primary exceeds this time")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.tertiary)
+                    }
+
+                    Spacer()
+
+                    Menu {
+                        ForEach(timeoutOptions, id: \.self) { seconds in
+                            Button("\(Int(seconds))s") {
+                                timeoutSeconds = seconds
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(timeoutLabel)
+                                .font(.system(size: 13, weight: .medium))
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.tertiary)
+                        }
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color.primary.opacity(0.06))
+                        )
+                    }
+                    .menuStyle(.borderlessButton)
+                }
+                .padding(16)
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.primary.opacity(0.02))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
+        )
+        .onAppear {
+            checkFallbackKey()
+        }
+        // If the primary provider changes to match the current fallback, clear the fallback
+        .onChange(of: primaryProviderRaw) { _, newPrimary in
+            if fallbackRaw == newPrimary {
+                fallbackRaw = ""
+                isEditingKey = false
+                apiKeyText = ""
+            }
+            checkFallbackKey()
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func checkFallbackKey() {
+        guard !fallbackRaw.isEmpty,
+            let type = TranscriptionProviderType(rawValue: fallbackRaw)
+        else {
+            fallbackHasKey = false
+            return
+        }
+        let key = SecureStorage.retrieveAPIKey(for: type)
+        fallbackHasKey = key != nil && !key!.isEmpty
+    }
+
+    private func saveFallbackKey() {
+        guard !apiKeyText.isEmpty,
+            let type = TranscriptionProviderType(rawValue: fallbackRaw)
+        else { return }
+        do {
+            try SecureStorage.storeAPIKey(apiKeyText, for: type)
+            isEditingKey = false
+            fallbackHasKey = true
+            apiKeyText = ""
+        } catch {
+            print("❌ FallbackSettingsCard: failed to store API key for \(type.rawValue): \(error)")
+            // Leave isEditingKey = true so the UI reflects the failed write.
+        }
+    }
+
+    private func removeFallbackKey() {
+        guard let type = TranscriptionProviderType(rawValue: fallbackRaw) else { return }
+        do {
+            try SecureStorage.deleteAPIKey(for: type)
+            fallbackHasKey = false
+        } catch {
+            print("❌ FallbackSettingsCard: failed to delete API key for \(type.rawValue): \(error)")
+            // fallbackHasKey is intentionally left unchanged — the key is still present.
+        }
+    }
+}
+
 // MARK: - General Settings
 
 private struct GeneralSettingsView: View {
@@ -1076,6 +1392,8 @@ private struct GeneralSettingsView: View {
         UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
         UserDefaults.standard.removeObject(forKey: "autoLaunchEnabled")
         UserDefaults.standard.removeObject(forKey: "selectedTranscriptionProvider")
+        UserDefaults.standard.removeObject(forKey: "fallbackTranscriptionProvider")
+        UserDefaults.standard.removeObject(forKey: "transcriptionTimeoutSeconds")
         for provider in TranscriptionProviderType.allCases {
             UserDefaults.standard.removeObject(forKey: provider.modelUserDefaultsKey)
             UserDefaults.standard.removeObject(forKey: provider.languageUserDefaultsKey)
@@ -1183,8 +1501,22 @@ private struct HistorySettingsView: View {
                     }
                 }
 
-                // Clear
+                // Clear / Export
                 SettingsGroup(title: "Data") {
+                    SettingsRow(
+                        icon: "square.and.arrow.up",
+                        title: "Export History",
+                        subtitle: "Save all transcriptions as a text file"
+                    ) {
+                        Button("Export") {
+                            let records = historyManager?.fetchAllTranscriptions() ?? []
+                            HistoryExporter.exportAndTrack(records)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        .disabled(count == 0)
+                    }
+
                     SettingsRow(
                         icon: "trash", title: "Clear History", subtitle: "Delete all transcriptions"
                     ) {
@@ -1310,7 +1642,7 @@ private struct AboutSettingsView: View {
             .padding(.bottom, 24)
         }
         .frame(maxWidth: .infinity)
-        .background(.ultraThinMaterial.opacity(0.3))
+
         .task {
             guard !hasAutoCheckedUpdates else { return }
             hasAutoCheckedUpdates = true

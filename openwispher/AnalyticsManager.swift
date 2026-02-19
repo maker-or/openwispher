@@ -13,12 +13,22 @@ internal final class AnalyticsManager {
     internal static let shared = AnalyticsManager()
 
     private var isConfigured = false
+    private var appOpenedCount = 0
 
     private init() {}
 
     @discardableResult
     internal func configureIfNeeded() -> Bool {
-        guard !isConfigured else { return true }
+        guard !isConfigured else {
+            #if DEBUG
+            print("📊 PostHog already configured")
+            #endif
+            return true
+        }
+
+        #if DEBUG
+        print("📊 Configuring PostHog SDK")
+        #endif
 
         let apiKey = resolvedInfoValue(primaryKey: "POSTHOG_API_KEY", fallbackKey: "INFOPLIST_KEY_POSTHOG_API_KEY")
             ?? ProcessInfo.processInfo.environment["POSTHOG_API_KEY"]
@@ -52,17 +62,34 @@ internal final class AnalyticsManager {
         PostHogSDK.shared.setup(config)
         registerAppMetadata()
         isConfigured = true
+
+        #if DEBUG
+        print("✅ PostHog SDK configured")
+        #endif
+
         return true
     }
 
-    internal func trackAppOpened() {
+    internal func trackAppOpened(trigger: String = "unknown") {
+        #if DEBUG
+        print("🚀 trackAppOpened called (trigger=\(trigger))")
+        #endif
+
         guard configureIfNeeded() else {
             #if DEBUG
             print("⚠️ PostHog not configured. Skipping app_opened.")
             #endif
             return
         }
-        captureAndFlush("app_opened")
+
+        appOpenedCount += 1
+        captureAndFlush(
+            "app_opened",
+            properties: [
+                "trigger": trigger,
+                "open_count_in_run": appOpenedCount,
+            ]
+        )
     }
 
     internal func trackHotkeyPressed(hotkey: HotkeyDefinition) {
@@ -95,7 +122,39 @@ internal final class AnalyticsManager {
         captureAndFlush("onboarding_completed")
     }
 
+    internal func trackHistoryExported(count: Int) {
+        guard configureIfNeeded() else { return }
+        captureAndFlush(
+            "history_exported",
+            properties: ["transcription_count": count]
+        )
+    }
+
+    internal func trackFallbackUsed(
+        primary: TranscriptionProviderType,
+        fallback: TranscriptionProviderType,
+        reason: String
+    ) {
+        guard configureIfNeeded() else { return }
+        captureAndFlush(
+            "transcription_fallback_used",
+            properties: [
+                "primary_provider": primary.rawValue,
+                "fallback_provider": fallback.rawValue,
+                "reason": reason,
+            ]
+        )
+    }
+
     private func captureAndFlush(_ event: String, properties: [String: Any]? = nil) {
+        #if DEBUG
+        if let properties {
+            print("📊 Capturing event '\(event)' with properties: \(properties)")
+        } else {
+            print("📊 Capturing event '\(event)'")
+        }
+        #endif
+
         if let properties {
             PostHogSDK.shared.capture(event, properties: properties)
         } else {

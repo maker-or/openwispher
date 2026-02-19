@@ -2,7 +2,7 @@
 //  WindowConfigurator.swift
 //  OpenWispher
 //
-//  Makes the window transparent so the glass background shows through.
+//  Configures native glass window chrome with readable contrast.
 //
 
 import AppKit
@@ -27,10 +27,9 @@ internal struct WindowConfigurator: NSViewRepresentable {
 
     @MainActor
     private func configure(window: NSWindow) {
-        // Enable translucent “glass” window.
-        // IMPORTANT: Do NOT toggle isOpaque (can flash white / break titlebar blending).
+        // Keep liquid-glass translucency, but avoid fully clear windows.
         window.isOpaque = false
-        window.backgroundColor = .clear
+        window.backgroundColor = NSColor.windowBackgroundColor.withAlphaComponent(0.92)
 
         // Make content extend under the titlebar so the traffic-light area
         // uses the same background as the body.

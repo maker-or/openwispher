@@ -12,6 +12,7 @@ enum TranscriptionProviderType: String, CaseIterable, Identifiable {
     case groq = "Groq"
     case elevenLabs = "ElevenLabs"
     case deepgram = "Deepgram"
+    case sarvam = "Sarvam"
     
     var id: String { rawValue }
     
@@ -20,6 +21,7 @@ enum TranscriptionProviderType: String, CaseIterable, Identifiable {
         case .groq: return "Groq (Whisper)"
         case .elevenLabs: return "ElevenLabs"
         case .deepgram: return "Deepgram"
+        case .sarvam: return "Sarvam AI"
         }
     }
     
@@ -31,6 +33,8 @@ enum TranscriptionProviderType: String, CaseIterable, Identifiable {
             return "High-quality speech-to-text with advanced features"
         case .deepgram:
             return "Enterprise-grade transcription with real-time capabilities"
+        case .sarvam:
+            return "Indian-language-first speech-to-text powered by Saaras"
         }
     }
 }
@@ -54,6 +58,33 @@ struct TranscriptionLanguageOption: Identifiable, Hashable {
 }
 
 extension TranscriptionProviderType {
+    // MARK: - Fallback & timeout UserDefaults keys
+
+    /// UserDefaults key that stores the raw value of the fallback provider ("" = disabled).
+    nonisolated static let fallbackProviderDefaultsKey = "fallbackTranscriptionProvider"
+
+    /// UserDefaults key that stores the per-attempt timeout in seconds (Double).
+    nonisolated static let timeoutSecondsDefaultsKey = "transcriptionTimeoutSeconds"
+
+    /// Default timeout before falling back to the secondary provider (seconds).
+    nonisolated static let defaultTimeoutSeconds: Double = 8
+
+    /// The currently saved fallback provider, or nil when disabled.
+    nonisolated static var savedFallbackProvider: TranscriptionProviderType? {
+        guard let raw = UserDefaults.standard.string(forKey: fallbackProviderDefaultsKey),
+              !raw.isEmpty
+        else { return nil }
+        return TranscriptionProviderType(rawValue: raw)
+    }
+
+    /// The currently saved timeout (seconds). Falls back to the default if unset.
+    nonisolated static var savedTimeoutSeconds: Double {
+        let stored = UserDefaults.standard.double(forKey: timeoutSecondsDefaultsKey)
+        return stored > 0 ? stored : defaultTimeoutSeconds
+    }
+
+    // MARK: - Existing keys (model / language)
+
     nonisolated var modelUserDefaultsKey: String {
         switch self {
         case .groq:
@@ -62,6 +93,8 @@ extension TranscriptionProviderType {
             return "selectedElevenLabsTranscriptionModel"
         case .deepgram:
             return "selectedDeepgramTranscriptionModel"
+        case .sarvam:
+            return "selectedSarvamTranscriptionModel"
         }
     }
 
@@ -73,6 +106,8 @@ extension TranscriptionProviderType {
             return "scribe_v2"
         case .deepgram:
             return "nova-3"
+        case .sarvam:
+            return "saaras:v3"
         }
     }
 
@@ -120,6 +155,19 @@ extension TranscriptionProviderType {
                         "Recommended for languages not yet supported by nova-3 and filler words"
                 ),
             ]
+        case .sarvam:
+            return [
+                TranscriptionModelOption(
+                    id: "saaras:v3",
+                    name: "Saaras v3",
+                    description: "Latest Sarvam model, recommended for all Indian languages"
+                ),
+                TranscriptionModelOption(
+                    id: "saaras:v2.5",
+                    name: "Saaras v2.5",
+                    description: "Previous generation model"
+                ),
+            ]
         }
     }
 
@@ -131,6 +179,8 @@ extension TranscriptionProviderType {
             return "selectedElevenLabsTranscriptionLanguage"
         case .deepgram:
             return "selectedDeepgramTranscriptionLanguage"
+        case .sarvam:
+            return "selectedSarvamTranscriptionLanguage"
         }
     }
 
@@ -158,6 +208,8 @@ extension TranscriptionProviderType {
             return TranscriptionLanguageOption.autoID
         case .deepgram:
             return resolvedModel == "flux" ? "en" : TranscriptionLanguageOption.autoID
+        case .sarvam:
+            return TranscriptionLanguageOption.autoID
         }
     }
 
@@ -210,6 +262,26 @@ extension TranscriptionProviderType {
                     )
                 ] + Self.expandLanguageGroups(Self.deepgramNova3LanguageGroups)
             }
+
+        case .sarvam:
+            return [
+                TranscriptionLanguageOption(
+                    id: TranscriptionLanguageOption.autoID,
+                    name: "Auto",
+                    description: "Automatically detect language from audio"
+                ),
+                TranscriptionLanguageOption(id: "hi-IN", name: "Hindi", description: "Locale code: hi-IN"),
+                TranscriptionLanguageOption(id: "bn-IN", name: "Bengali", description: "Locale code: bn-IN"),
+                TranscriptionLanguageOption(id: "kn-IN", name: "Kannada", description: "Locale code: kn-IN"),
+                TranscriptionLanguageOption(id: "ml-IN", name: "Malayalam", description: "Locale code: ml-IN"),
+                TranscriptionLanguageOption(id: "mr-IN", name: "Marathi", description: "Locale code: mr-IN"),
+                TranscriptionLanguageOption(id: "od-IN", name: "Odia", description: "Locale code: od-IN"),
+                TranscriptionLanguageOption(id: "pa-IN", name: "Punjabi", description: "Locale code: pa-IN"),
+                TranscriptionLanguageOption(id: "ta-IN", name: "Tamil", description: "Locale code: ta-IN"),
+                TranscriptionLanguageOption(id: "te-IN", name: "Telugu", description: "Locale code: te-IN"),
+                TranscriptionLanguageOption(id: "gu-IN", name: "Gujarati", description: "Locale code: gu-IN"),
+                TranscriptionLanguageOption(id: "en-IN", name: "English (India)", description: "Locale code: en-IN"),
+            ]
         }
     }
 
@@ -217,7 +289,7 @@ extension TranscriptionProviderType {
         switch self {
         case .deepgram:
             return modelID == "flux" ? "flux-general-en" : modelID
-        case .groq, .elevenLabs:
+        case .groq, .elevenLabs, .sarvam:
             return modelID
         }
     }
@@ -476,7 +548,9 @@ enum TranscriptionError: Error, LocalizedError {
     case networkError(Error)
     case decodingError(Error)
     case providerNotConfigured
-    
+    /// The request did not complete within the configured timeout interval.
+    case timeout(provider: String)
+
     var errorDescription: String? {
         switch self {
         case .missingAPIKey(let provider):
@@ -495,6 +569,20 @@ enum TranscriptionError: Error, LocalizedError {
             return "Failed to parse response: \(error.localizedDescription)"
         case .providerNotConfigured:
             return "Transcription provider not properly configured"
+        case .timeout(let provider):
+            return "\(provider) did not respond in time"
+        }
+    }
+
+    /// Returns true for errors where retrying with a different provider is worthwhile.
+    var shouldTryFallback: Bool {
+        switch self {
+        case .timeout: return true
+        case .apiError(let statusCode, _): return statusCode == 429 || statusCode >= 500
+        case .networkError: return true
+        case .missingAPIKey: return false
+        case .emptyTranscription: return false
+        case .invalidURL, .invalidResponse, .decodingError, .providerNotConfigured: return false
         }
     }
 }

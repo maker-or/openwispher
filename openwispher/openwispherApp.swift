@@ -11,6 +11,7 @@ import SwiftUI
 
 @main
 internal struct openwispherApp: App {
+    @NSApplicationDelegateAdaptor(AppLifecycleDelegate.self) private var appLifecycleDelegate
     @State private var appState = AppState()
     @State private var permissionManager = PermissionManager()
     @State private var historyManager: HistoryManager?
@@ -47,7 +48,6 @@ internal struct openwispherApp: App {
                 NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
             ) { _ in
                 permissionManager.checkPermissions()
-                AnalyticsManager.shared.trackAppOpened()
             }
             .preferredColorScheme(.dark)
         }
@@ -89,6 +89,28 @@ internal struct openwispherApp: App {
         .defaultPosition(.center)
     }
 
+}
+
+@MainActor
+internal final class AppLifecycleDelegate: NSObject, NSApplicationDelegate {
+    internal func applicationDidFinishLaunching(_ notification: Notification) {
+        #if DEBUG
+        print("🧭 App lifecycle: didFinishLaunching")
+        #endif
+
+        let isConfigured = AnalyticsManager.shared.configureIfNeeded()
+        #if DEBUG
+        print("🧭 PostHog configured before app_opened=\(isConfigured)")
+        #endif
+    }
+
+    internal func applicationDidBecomeActive(_ notification: Notification) {
+        #if DEBUG
+        print("🧭 App lifecycle: didBecomeActive")
+        #endif
+
+        AnalyticsManager.shared.trackAppOpened(trigger: "did_become_active")
+    }
 }
 
 /// Content view that manages environment and setup
@@ -266,6 +288,8 @@ private struct AppContentView: View {
         appState.hasCompletedOnboarding = hasCompleted
 
         if hasCompleted {
+            // Migrate existing keychain items to AfterFirstUnlock accessibility (one-time, silent)
+            SecureStorage.migrateKeychainAccessibility()
             // Warm up keychain access only after onboarding
             _ = SecureStorage.retrieveAPIKey(for: selectedProvider)
         }

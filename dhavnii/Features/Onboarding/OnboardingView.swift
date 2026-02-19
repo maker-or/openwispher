@@ -381,6 +381,8 @@ private struct ApiKeyScreen: View {
             return URL(string: "https://elevenlabs.io/app/developers/api-keys")!
         case .deepgram:
             return URL(string: "https://developers.deepgram.com/docs/create-additional-api-keys")!
+        case .sarvam:
+            return URL(string: "https://dashboard.sarvam.ai")!
         }
     }
 
