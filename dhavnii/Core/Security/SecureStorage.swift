@@ -40,7 +40,27 @@ internal enum SecureStorage {
         guard let data = apiKey.data(using: .utf8) else {
             throw KeychainError.conversionFailed
         }
-        
+
+        // Create an Access object with no trusted-application list.
+        //
+        // When a keychain item is stored WITHOUT an explicit SecAccess, macOS
+        // automatically creates an ACL tied to the storing app's code signature.
+        // For an unsigned (or ad-hoc-signed) app this means every new build gets
+        // a different signature, and macOS prompts the user for their system
+        // password on every launch because it sees a "different" app trying to
+        // read the item.
+        //
+        // Passing a SecAccess with an empty trusted-application array and the
+        // kSecACLAuthorizationAny flag tells the keychain to allow any
+        // application to read this item without prompting.  This is the correct
+        // approach for unsigned, non-sandboxed apps that distribute outside the
+        // Mac App Store.
+        var access: SecAccess?
+        let accessStatus = SecAccessCreate("openwispher_api_keys" as CFString, [] as CFArray, &access)
+        guard accessStatus == errSecSuccess, let secAccess = access else {
+            throw KeychainError.invalidStatus(accessStatus)
+        }
+
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
@@ -48,7 +68,8 @@ internal enum SecureStorage {
             kSecValueData as String: data,
             // AfterFirstUnlock: accessible after the user logs in once per boot,
             // without prompting for the system password on every app launch.
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+            kSecAttrAccess as String: secAccess
         ]
         
         let status = SecItemAdd(query as CFDictionary, nil)

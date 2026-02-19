@@ -8,7 +8,7 @@
 import AppKit
 import SwiftUI
 
-internal extension View {
+extension View {
     @ViewBuilder
     func liquidGlassSurface(
         cornerRadius: CGFloat,
@@ -82,8 +82,10 @@ internal extension View {
 internal struct LiquidGlassBackground: View {
     var body: some View {
         Group {
-            VisualEffectBlur(material: .windowBackground, blendingMode: .withinWindow, state: .active)
-                .overlay(Color.black.opacity(0.3))
+            VisualEffectBlur(
+                material: .underWindowBackground, blendingMode: .behindWindow, state: .active
+            )
+            .overlay(Color.black.opacity(0.3))
         }
         .ignoresSafeArea()
     }

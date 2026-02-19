@@ -288,10 +288,9 @@ private struct AppContentView: View {
         appState.hasCompletedOnboarding = hasCompleted
 
         if hasCompleted {
-            // Migrate existing keychain items to AfterFirstUnlock accessibility (one-time, silent)
+            // Migrate existing keychain items to AfterFirstUnlock accessibility (one-time, silent).
+            // This also warms up the in-memory cache for all providers, so no extra read is needed.
             SecureStorage.migrateKeychainAccessibility()
-            // Warm up keychain access only after onboarding
-            _ = SecureStorage.retrieveAPIKey(for: selectedProvider)
         }
 
         // If onboarding is complete, still check permissions on launch
