@@ -18,6 +18,7 @@ internal enum SecureStorage {
     private static let groqAPIKey = "com.openwispher.apiKeys.groq"
     private static let elevenLabsAPIKey = "com.openwispher.apiKeys.elevenlabs"
     private static let deepgramAPIKey = "com.openwispher.apiKeys.deepgram"
+    private static let sarvamAPIKey = "com.openwispher.apiKeys.sarvam"
     
     // MARK: - Error Types
     internal enum KeychainError: Error {
@@ -129,7 +130,7 @@ internal enum SecureStorage {
         let migrationKey = "com.openwispher.keychainAccessibilityMigrated.v1"
         guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
 
-        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram]
+        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram, .sarvam]
         var allSucceeded = true
         for provider in providers {
             // Read the existing value (if any) — this may still prompt once
@@ -152,7 +153,7 @@ internal enum SecureStorage {
 
     /// Migrate existing UserDefaults keys to Keychain (one-time migration)
     internal static func migrateFromUserDefaults() {
-        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram]
+        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram, .sarvam]
         
         for provider in providers {
             let userDefaultsKey: String
@@ -163,6 +164,8 @@ internal enum SecureStorage {
                 userDefaultsKey = "elevenLabsAPIKey"
             case .deepgram:
                 userDefaultsKey = "deepgramAPIKey"
+            case .sarvam:
+                userDefaultsKey = "sarvamAPIKey"
             }
             
             // Check if already in keychain
@@ -186,7 +189,7 @@ internal enum SecureStorage {
     
     /// Clear all stored API keys
     internal static func clearAllAPIKeys() {
-        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram]
+        let providers: [TranscriptionProviderType] = [.groq, .elevenLabs, .deepgram, .sarvam]
         
         for provider in providers {
             try? deleteAPIKey(for: provider)
@@ -196,6 +199,7 @@ internal enum SecureStorage {
         UserDefaults.standard.removeObject(forKey: "groqAPIKey")
         UserDefaults.standard.removeObject(forKey: "elevenLabsAPIKey")
         UserDefaults.standard.removeObject(forKey: "deepgramAPIKey")
+        UserDefaults.standard.removeObject(forKey: "sarvamAPIKey")
     }
     
     // MARK: - Private Helpers
@@ -208,6 +212,8 @@ internal enum SecureStorage {
             return elevenLabsAPIKey
         case .deepgram:
             return deepgramAPIKey
+        case .sarvam:
+            return sarvamAPIKey
         }
     }
 

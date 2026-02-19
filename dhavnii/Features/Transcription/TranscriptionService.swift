@@ -17,6 +17,7 @@ internal class TranscriptionService {
     private var groqClient = GroqAPIClient()
     private var elevenLabsClient = ElevenLabsAPIClient()
     private var deepgramClient = DeepgramAPIClient()
+    private var sarvamClient = SarvamAPIClient()
 
     // selectedProvider is still injected at startup but is now also re-read live from
     // UserDefaults on every transcription attempt so that Settings changes take effect
@@ -192,7 +193,11 @@ internal class TranscriptionService {
 
             // Whichever finishes first wins; cancel the other
             do {
-                let result = try await group.next()!
+                guard let result = try await group.next() else {
+                    // Should never happen: the group always contains at least two tasks.
+                    group.cancelAll()
+                    throw TranscriptionError.invalidResponse
+                }
                 group.cancelAll()
                 return result
             } catch {
@@ -241,6 +246,7 @@ internal class TranscriptionService {
         case .groq: return groqClient
         case .elevenLabs: return elevenLabsClient
         case .deepgram: return deepgramClient
+        case .sarvam: return sarvamClient
         }
     }
 

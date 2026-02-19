@@ -125,7 +125,7 @@ struct HomeView: View {
             }
         }
         .frame(minWidth: 220)
-        .background(.ultraThinMaterial)
+
     }
 
     private func sidebarItem(for section: SidebarSection) -> some View {
@@ -175,7 +175,7 @@ struct HomeView: View {
 
     private var detailContent: some View {
         HomeContentView(viewModel: homeViewModel, appState: appState)
-            .background(.ultraThinMaterial.opacity(0.3))
+
     }
 }
 
@@ -245,27 +245,7 @@ struct HomeContentView: View {
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial.opacity(0.5))
-    }
 
-    // MARK: - Header
-
-    private var contentHeader: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Home")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 16)
-        .background(.ultraThinMaterial.opacity(0.5))
     }
 
     // MARK: - Empty State

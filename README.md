@@ -131,7 +131,7 @@ dhavnii/
 
 ```bash
 git clone https://github.com/maker-or/openwispher.git
-cd dhavnii
+cd openwispher
 ```
 
 ### 2. Open in Xcode

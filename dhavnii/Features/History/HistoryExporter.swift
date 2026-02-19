@@ -7,7 +7,7 @@
 
 import AppKit
 import Foundation
-internal import UniformTypeIdentifiers
+import UniformTypeIdentifiers
 
 /// Handles exporting transcription records to a plain text file.
 @MainActor

@@ -5,6 +5,7 @@
 //  Shared Liquid Glass helpers and fallbacks.
 //
 
+import AppKit
 import SwiftUI
 
 internal extension View {
@@ -17,7 +18,7 @@ internal extension View {
         strokeColor: Color = Color.black.opacity(0.12)
     ) -> some View {
         let fillColor = tint ?? fallbackFill
-        let opacity: Double = interactive ? 0.5 : 0.35
+        let opacity: Double = interactive ? 0.62 : 0.48
 
         self
             .background(
@@ -32,6 +33,25 @@ internal extension View {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(strokeColor, lineWidth: 1)
             )
+    }
+
+    @ViewBuilder
+    func liquidGlassPanelBackground(
+        material: NSVisualEffectView.Material = .windowBackground,
+        tint: Color = Color.black.opacity(0.28),
+        includeStroke: Bool = false
+    ) -> some View {
+        self
+            .background(
+                VisualEffectBlur(material: material, blendingMode: .withinWindow, state: .active)
+                    .overlay(tint)
+            )
+            .overlay {
+                if includeStroke {
+                    Rectangle()
+                        .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                }
+            }
     }
 
     @ViewBuilder
@@ -53,7 +73,6 @@ internal extension View {
         if #available(macOS 15.0, *) {
             self
                 .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-                .containerBackground(.ultraThinMaterial, for: .window)
         } else {
             self
         }
@@ -63,7 +82,8 @@ internal extension View {
 internal struct LiquidGlassBackground: View {
     var body: some View {
         Group {
-            VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow, state: .active)
+            VisualEffectBlur(material: .windowBackground, blendingMode: .withinWindow, state: .active)
+                .overlay(Color.black.opacity(0.3))
         }
         .ignoresSafeArea()
     }

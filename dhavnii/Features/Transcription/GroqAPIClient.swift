@@ -46,10 +46,14 @@ actor GroqAPIClient: TranscriptionProvider {
     ///     omitted, letting Whisper output its raw hypothesis with no additional
     ///     guidance.  Pass `false` to include the `transcriptionPrompt` hint so
     ///     Whisper applies the specified vocabulary and formatting preferences.
+    func transcribe(audioData: Data, fileName: String) async throws -> String {
+        try await transcribe(audioData: audioData, fileName: fileName, preserveVerbatim: true)
+    }
+
     func transcribe(
         audioData: Data,
-        fileName: String = "audio.m4a",
-        preserveVerbatim: Bool = true
+        fileName: String,
+        preserveVerbatim: Bool
     ) async throws -> String {
         let key = apiKey
         guard !key.isEmpty else {

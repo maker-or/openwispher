@@ -76,7 +76,7 @@ internal struct SettingsView: View {
             sidebarContent
         } detail: {
             detailView
-                .background(.ultraThinMaterial.opacity(0.3))
+
         }
         .frame(minWidth: 750, minHeight: 550)
         .background(WindowConfigurator())
@@ -133,7 +133,7 @@ internal struct SettingsView: View {
             // }
         }
         .frame(minWidth: 220)
-        .background(.ultraThinMaterial)
+
     }
 
     private func settingsSidebarItem(for section: SettingsSection) -> some View {
@@ -541,7 +541,8 @@ private struct ProvidersSettingsView: View {
                             return
                         }
                         let resolvedLanguage = type.resolveLanguageID(language, modelID: model)
-                        UserDefaults.standard.set(resolvedLanguage, forKey: type.languageUserDefaultsKey)
+                        UserDefaults.standard.set(
+                            resolvedLanguage, forKey: type.languageUserDefaultsKey)
                     },
                     getAPIKey: { provider in
                         guard let type = TranscriptionProviderType(rawValue: provider) else {
@@ -948,7 +949,7 @@ private struct FallbackSettingsCard: View {
 
     private var fallbackName: String {
         guard !fallbackRaw.isEmpty,
-              let type = TranscriptionProviderType(rawValue: fallbackRaw)
+            let type = TranscriptionProviderType(rawValue: fallbackRaw)
         else { return "None" }
         return type.displayName
     }
@@ -1130,11 +1131,11 @@ private struct FallbackSettingsCard: View {
                 }
             }
 
-            Divider()
-                .padding(.horizontal, 16)
-
             // Timeout threshold — only relevant when a fallback provider is selected
             if !fallbackRaw.isEmpty {
+                Divider()
+                    .padding(.horizontal, 16)
+
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Timeout")
@@ -1200,7 +1201,7 @@ private struct FallbackSettingsCard: View {
 
     private func checkFallbackKey() {
         guard !fallbackRaw.isEmpty,
-              let type = TranscriptionProviderType(rawValue: fallbackRaw)
+            let type = TranscriptionProviderType(rawValue: fallbackRaw)
         else {
             fallbackHasKey = false
             return
@@ -1211,7 +1212,7 @@ private struct FallbackSettingsCard: View {
 
     private func saveFallbackKey() {
         guard !apiKeyText.isEmpty,
-              let type = TranscriptionProviderType(rawValue: fallbackRaw)
+            let type = TranscriptionProviderType(rawValue: fallbackRaw)
         else { return }
         do {
             try SecureStorage.storeAPIKey(apiKeyText, for: type)
@@ -1226,8 +1227,13 @@ private struct FallbackSettingsCard: View {
 
     private func removeFallbackKey() {
         guard let type = TranscriptionProviderType(rawValue: fallbackRaw) else { return }
-        try? SecureStorage.deleteAPIKey(for: type)
-        fallbackHasKey = false
+        do {
+            try SecureStorage.deleteAPIKey(for: type)
+            fallbackHasKey = false
+        } catch {
+            print("❌ FallbackSettingsCard: failed to delete API key for \(type.rawValue): \(error)")
+            // fallbackHasKey is intentionally left unchanged — the key is still present.
+        }
     }
 }
 
@@ -1636,7 +1642,7 @@ private struct AboutSettingsView: View {
             .padding(.bottom, 24)
         }
         .frame(maxWidth: .infinity)
-        .background(.ultraThinMaterial.opacity(0.3))
+
         .task {
             guard !hasAutoCheckedUpdates else { return }
             hasAutoCheckedUpdates = true
