@@ -225,13 +225,7 @@ internal class TranscriptionService {
         }
 
         if appState.autoPasteEnabled {
-            let hasAccessibilityPermission = permissionManager.accessibilityPermissionState(
-                for: "transcription auto-paste"
-            )
-            clipboardManager.copyAndPasteIfPossible(
-                transcription,
-                hasAccessibilityPermission: hasAccessibilityPermission
-            )
+            clipboardManager.copyAndPasteIfPossible(transcription)
         } else {
             clipboardManager.copyToClipboard(transcription)
         }

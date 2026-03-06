@@ -63,9 +63,11 @@ class ClipboardManager {
     }
     
     /// Copy to clipboard and auto-paste if possible
-    func copyAndPasteIfPossible(_ text: String, hasAccessibilityPermission: Bool) {
+    func copyAndPasteIfPossible(_ text: String) {
         // Always copy to clipboard (mandatory)
         copyToClipboard(text)
+
+        let hasAccessibilityPermission = AXIsProcessTrusted()
 
         let frontmostBundleIdentifier = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "unknown"
         print(
