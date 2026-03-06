@@ -1216,7 +1216,7 @@ private struct FallbackSettingsCard: View {
 
 private struct GeneralSettingsView: View {
     @Binding var showingResetAlert: Bool
-    var appState: AppState
+    @Bindable var appState: AppState
     var hotkeyManager: HotkeyManager?
 
     @AppStorage("autoLaunchEnabled") private var autoLaunchEnabled = false
@@ -1238,6 +1238,17 @@ private struct GeneralSettingsView: View {
                         subtitle: "Start automatically when you log in"
                     ) {
                         Toggle("", isOn: $autoLaunchEnabled)
+                            .toggleStyle(.switch)
+                            .controlSize(.small)
+                    }
+                }
+
+                SettingsGroup(title: "Behavior") {
+                    SettingsRow(
+                        icon: "square.and.arrow.down.on.square", title: "Auto-paste to focused field",
+                        subtitle: "Paste transcriptions automatically after copying them"
+                    ) {
+                        Toggle("", isOn: $appState.autoPasteEnabled)
                             .toggleStyle(.switch)
                             .controlSize(.small)
                     }
@@ -1366,6 +1377,7 @@ private struct GeneralSettingsView: View {
     private func resetApp() {
         UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
         UserDefaults.standard.removeObject(forKey: "autoLaunchEnabled")
+        UserDefaults.standard.removeObject(forKey: AppState.autoPasteEnabledDefaultsKey)
         UserDefaults.standard.removeObject(forKey: "selectedTranscriptionProvider")
         UserDefaults.standard.removeObject(forKey: "fallbackTranscriptionProvider")
         UserDefaults.standard.removeObject(forKey: "transcriptionTimeoutSeconds")
@@ -1383,6 +1395,7 @@ private struct GeneralSettingsView: View {
         appState.hasCompletedOnboarding = false
         appState.lastTranscription = ""
         appState.recordingState = .idle
+        appState.autoPasteEnabled = true
 
         NSApplication.shared.terminate(nil)
     }
