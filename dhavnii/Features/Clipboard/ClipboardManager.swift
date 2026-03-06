@@ -66,17 +66,27 @@ class ClipboardManager {
     func copyAndPasteIfPossible(_ text: String) {
         // Always copy to clipboard (mandatory)
         copyToClipboard(text)
-        
-        if AXIsProcessTrusted() {
-            // Ensure OpenWispher is not the active app (stealing focus)
-            if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == Bundle.main.bundleIdentifier {
-                NSApp.hide(nil)
-            }
-            
-            // Delay to allow focus to settle/switch back
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
-                self?.simulatePaste()
-            }
+
+        let hasAccessibilityPermission = AXIsProcessTrusted()
+
+        let frontmostBundleIdentifier = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "unknown"
+        print(
+            "📋 Auto-paste decision: accessibility=\(hasAccessibilityPermission), frontmostApp=\(frontmostBundleIdentifier)"
+        )
+
+        guard hasAccessibilityPermission else {
+            print("⚠️ Auto-paste skipped: accessibility permission unavailable")
+            return
+        }
+
+        // Ensure OpenWispher is not the active app (stealing focus)
+        if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == Bundle.main.bundleIdentifier {
+            NSApp.hide(nil)
+        }
+
+        // Delay to allow focus to settle/switch back
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+            self?.simulatePaste()
         }
     }
 }

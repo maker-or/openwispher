@@ -240,6 +240,14 @@ internal class PermissionManager {
             }
         }
     }
+
+    internal func accessibilityPermissionState(for reason: String) -> Bool {
+        let trusted = hasAccessibilityPermission
+        print(
+            "🔓 Accessibility permission queried for \(reason): cached=\(trusted), lastKnown=\(lastAccessibilityState), monitoring=\(isMonitoring)"
+        )
+        return trusted
+    }
     
     /// Verify accessibility permission - use only the standard reliable API
     private func verifyAccessibilityPermission() -> Bool {

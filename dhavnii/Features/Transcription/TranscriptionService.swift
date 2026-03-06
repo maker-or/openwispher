@@ -13,6 +13,7 @@ import Foundation
 internal class TranscriptionService {
     private let audioRecorder = AudioRecorder()
     private let clipboardManager = ClipboardManager()
+    private let permissionManager: PermissionManager
 
     private var groqClient = GroqAPIClient()
     private var elevenLabsClient = ElevenLabsAPIClient()
@@ -30,8 +31,13 @@ internal class TranscriptionService {
     internal static let transcriptionSavedNotification = Notification.Name(
         "OpenWispher.TranscriptionSaved")
 
-    internal init(appState: AppState, selectedProvider: TranscriptionProviderType = .groq) {
+    internal init(
+        appState: AppState,
+        permissionManager: PermissionManager,
+        selectedProvider: TranscriptionProviderType = .groq
+    ) {
         self.appState = appState
+        self.permissionManager = permissionManager
         self.selectedProvider = selectedProvider
     }
 
@@ -218,7 +224,11 @@ internal class TranscriptionService {
             return
         }
 
-        clipboardManager.copyAndPasteIfPossible(transcription)
+        if appState.autoPasteEnabled {
+            clipboardManager.copyAndPasteIfPossible(transcription)
+        } else {
+            clipboardManager.copyToClipboard(transcription)
+        }
 
         historyManager?.saveTranscription(text: transcription, provider: provider)
 
