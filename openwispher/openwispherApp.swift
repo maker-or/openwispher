@@ -203,7 +203,11 @@ private struct AppContentView: View {
             savedProviderRaw.flatMap { TranscriptionProviderType(rawValue: $0) } ?? .groq
 
         // Initialize transcription service with selected provider
-        let service = TranscriptionService(appState: appState, selectedProvider: selectedProvider)
+        let service = TranscriptionService(
+            appState: appState,
+            permissionManager: permissionManager,
+            selectedProvider: selectedProvider
+        )
         service.historyManager = manager
         transcriptionService = service
 
