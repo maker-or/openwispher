@@ -13,6 +13,7 @@ import Carbon
 class ClipboardManager {
     private let autoPasteRetryDelay: TimeInterval = 0.12
     private let autoPasteMaxAttempts = 10
+    private var autoPasteToken = UUID()
 
     private struct FocusedElementState {
         let bundleIdentifier: String
@@ -21,7 +22,7 @@ class ClipboardManager {
 
         var isValidPasteTarget: Bool {
             switch role {
-            case "AXTextField", "AXTextArea", "AXComboBox", "AXSearchField":
+            case "AXTextField", "AXTextArea", "AXComboBox", "AXSearchField", "AXStaticText":
                 return true
             case "AXWebArea", "AXGroup", "AXScrollArea":
                 return isEditable
@@ -38,8 +39,8 @@ class ClipboardManager {
         pasteboard.setString(text, forType: .string)
     }
     
-    /// Check if a text input field is currently focused
-    func isTextFieldFocused() -> Bool {
+    /// Check if the focused element can safely receive an auto-paste event
+    func isValidPasteTargetFocused() -> Bool {
         focusedElementState()?.isValidPasteTarget ?? false
     }
     
@@ -63,6 +64,9 @@ class ClipboardManager {
         // Always copy to clipboard (mandatory)
         copyToClipboard(text)
 
+        let token = UUID()
+        autoPasteToken = token
+
         let hasAccessibilityPermission = AXIsProcessTrusted()
 
         let frontmostBundleIdentifier = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "unknown"
@@ -81,10 +85,15 @@ class ClipboardManager {
         }
 
         // Wait for focus to return to a valid text target before posting Cmd+V.
-        attemptPasteWhenReady(remainingAttempts: autoPasteMaxAttempts)
+        attemptPasteWhenReady(remainingAttempts: autoPasteMaxAttempts, token: token)
     }
 
-    private func attemptPasteWhenReady(remainingAttempts: Int) {
+    private func attemptPasteWhenReady(remainingAttempts: Int, token: UUID) {
+        guard token == autoPasteToken else {
+            print("⚠️ Auto-paste cancelled: stale request")
+            return
+        }
+
         guard remainingAttempts > 0 else {
             let frontmostBundleIdentifier =
                 NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "unknown"
@@ -99,6 +108,10 @@ class ClipboardManager {
            focusedElement.bundleIdentifier != Bundle.main.bundleIdentifier,
            focusedElement.isValidPasteTarget
         {
+            guard token == autoPasteToken else {
+                print("⚠️ Auto-paste cancelled before paste: stale request")
+                return
+            }
             print(
                 "✅ Auto-paste target ready: frontmostApp=\(focusedElement.bundleIdentifier), role=\(focusedElement.role ?? "unknown"), editable=\(focusedElement.isEditable)"
             )
@@ -107,7 +120,7 @@ class ClipboardManager {
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + autoPasteRetryDelay) { [weak self] in
-            self?.attemptPasteWhenReady(remainingAttempts: remainingAttempts - 1)
+            self?.attemptPasteWhenReady(remainingAttempts: remainingAttempts - 1, token: token)
         }
     }
 
